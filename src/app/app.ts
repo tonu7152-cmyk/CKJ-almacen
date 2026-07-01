@@ -27,5 +27,3 @@ import { AuthService } from './servicios/auth';
 export class AppComponent {
   constructor(public auth: AuthService) {}
 }
-  title = 'CKJ - Sistema de Almacén';
-}

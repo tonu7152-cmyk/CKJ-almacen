@@ -177,6 +177,34 @@ export class ListaMateriales implements AfterViewInit {
     return 'primary';
   }
 
+  getStockAlert(material: Material): string {
+    const min = material.stockMinimo || 10;
+    if (material.cantidad <= 0) return 'critical';
+    if (material.cantidad < min) return 'warning';
+    return 'ok';
+  }
+
+  ajustarStock(material: Material): void {
+    const nuevaCantidad = prompt(
+      `Ajustar stock de "${material.nombre}"\nStock actual: ${material.cantidad} ${material.unidad}\nStock mínimo: ${material.stockMinimo||10}\n\nIngresa la nueva cantidad:`,
+      String(material.cantidad)
+    );
+    if (nuevaCantidad === null) return;
+    const cant = Number(nuevaCantidad);
+    if (isNaN(cant) || cant < 0) {
+      this.snackBar.open('❌ Cantidad inválida', 'Cerrar', { duration: 2000 });
+      return;
+    }
+    const motivo = prompt('Motivo del ajuste (opcional):') || 'Corrección de inventario';
+    this.materialService.ajustarStock(material.id!, cant, motivo).subscribe({
+      next: () => {
+        this.snackBar.open(`✅ Stock ajustado: ${material.cantidad} → ${cant}`, 'OK', { duration: 2000 });
+        this.loadMateriales();
+      },
+      error: (err) => this.snackBar.open(`❌ ${err.error?.error||'Error'}`, 'Cerrar', { duration: 3000 }),
+    });
+  }
+
   exportPDF(): void {
     const data = this.dataSource.filteredData.length > 0 ? this.dataSource.filteredData : this.dataSource.data;
     if (data.length === 0) {

@@ -9,4 +9,5 @@ export interface Material {
   fechaIngreso: Date;
   proveedor: string;
   precioUnitario: number;
+  stockMinimo?: number;
 }

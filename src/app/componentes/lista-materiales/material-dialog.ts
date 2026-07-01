@@ -95,6 +95,13 @@ import { Material } from '../../modelos/material';
           </mat-form-field>
 
           <mat-form-field appearance="outline">
+            <mat-label>Stock Mínimo</mat-label>
+            <input matInput type="number" formControlName="stockMinimo" placeholder="10" />
+            <span matTextSuffix>unid.</span>
+            <mat-hint>Alerta cuando baje de esta cantidad</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
             <mat-label>Fecha de Ingreso</mat-label>
             <input matInput [matDatepicker]="picker" formControlName="fechaIngreso" />
             <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
@@ -147,6 +154,7 @@ export class MaterialDialogComponent {
       ubicacion: [''],
       proveedor: [''],
       precioUnitario: [0, [Validators.min(0)]],
+      stockMinimo: [10, [Validators.min(0)]],
       fechaIngreso: [new Date().toISOString().split('T')[0]],
     });
 

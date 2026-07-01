@@ -82,7 +82,8 @@ async function initDatabase() {
     descripcion TEXT DEFAULT '', categoria TEXT DEFAULT '',
     cantidad REAL NOT NULL DEFAULT 0, unidad TEXT DEFAULT 'unidades',
     ubicacion TEXT DEFAULT '', fechaIngreso TEXT DEFAULT (date('now')),
-    proveedor TEXT DEFAULT '', precioUnitario REAL DEFAULT 0
+    proveedor TEXT DEFAULT '', precioUnitario REAL DEFAULT 0,
+    stockMinimo REAL DEFAULT 10
   )`);
   db.run(`CREATE TABLE IF NOT EXISTS movimientos (
     id INTEGER PRIMARY KEY AUTOINCREMENT, materialId INTEGER NOT NULL,
@@ -99,8 +100,9 @@ async function initDatabase() {
   )`);
   saveDb();
 
-  // Agregar columna comprobante si no existe (para BD ya creadas)
+  // Agregar columnas si no existen (para BD ya creadas)
   try { db.run(`ALTER TABLE movimientos ADD COLUMN comprobante TEXT DEFAULT ''`); saveDb(); } catch(e) {}
+  try { db.run(`ALTER TABLE materiales ADD COLUMN stockMinimo REAL DEFAULT 10`); saveDb(); } catch(e) {}
 
   if (queryOne('SELECT COUNT(*) as total FROM usuarios').total === 0) seedUsuarios();
   if (queryOne('SELECT COUNT(*) as total FROM materiales').total === 0) seedDatabase();
@@ -121,13 +123,15 @@ function seedUsuarios() {
 function seedDatabase() {
   console.log('🌱 Sembrando datos iniciales...');
   const mats = [
-    ['Cemento Portland','Cemento gris para construcción','Materiales de Construcción',150,'bolsas','A1-Estante 1','2026-06-01','Constructora ABC',25.50],
-    ['Varilla de Acero 3/8','Varilla corrugada para refuerzo','Acero',80,'unidades','B2-Estante 3','2026-06-05','Aceros del Norte',45.00],
-    ['Ladrillo Rojo','Ladrillo de arcilla para muros','Materiales de Construcción',500,'unidades','A3-Patio','2026-06-10','Ladrillera Central',1.20],
-    ['Tornillo Hexagonal 1/2','Tornillo de acero galvanizado','Ferretería',25,'cajas','C1-Estante 5','2026-06-12','Ferretería El Tornillo',8.75],
-    ['Pintura Blanca Latex','Pintura vinílica para interiores','Pinturas',10,'galones','D1-Estante 2','2026-06-15','Pinturas del Valle',55.00]
+    ['Cemento Portland','Cemento gris para construcción','Materiales de Construcción',150,'bolsas','A1-Estante 1','2026-06-01','Constructora ABC',25.50,20],
+    ['Varilla de Acero 3/8','Varilla corrugada para refuerzo','Acero',80,'unidades','B2-Estante 3','2026-06-05','Aceros del Norte',45.00,15],
+    ['Ladrillo Rojo','Ladrillo de arcilla para muros','Materiales de Construcción',500,'unidades','A3-Patio','2026-06-10','Ladrillera Central',1.20,50],
+    ['Tornillo Hexagonal 1/2','Tornillo de acero galvanizado','Ferretería',25,'cajas','C1-Estante 5','2026-06-12','Ferretería El Tornillo',8.75,10],
+    ['Pintura Blanca Latex','Pintura vinílica para interiores','Pinturas',10,'galones','D1-Estante 2','2026-06-15','Pinturas del Valle',55.00,5],
+    ['Pinturas CPP','galon de 3,785','Pinturas',49,'galones','b1','2026-07-01','',38.50,10],
+    ['llave cuchilla','','Electricidad',5,'cajas','A1','2026-07-01','',5.00,10]
   ];
-  for (const m of mats) db.run(`INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?)`, m);
+  for (const m of mats) db.run(`INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?,?)`, m);
 
   const movs = [
     [1,'ingreso',50,'2026-06-28T10:00:00','Constructora ABC','','Admin',''],
@@ -187,11 +191,12 @@ app.get('/materiales/:id', (req, res) => {
 });
 
 app.post('/materiales', authMiddleware(['admin','almacen']), (req, res) => {
-  const { nombre, descripcion, categoria, cantidad, unidad, ubicacion, fechaIngreso, proveedor, precioUnitario } = req.body;
+  const { nombre, descripcion, categoria, cantidad, unidad, ubicacion, fechaIngreso, proveedor, precioUnitario, stockMinimo } = req.body;
   if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio' });
-  runSql(`INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?)`, [
+  runSql(`INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?,?)`, [
     nombre, descripcion||'', categoria||'', cantidad||0, unidad||'unidades',
-    ubicacion||'', fechaIngreso||new Date().toISOString().split('T')[0], proveedor||'', precioUnitario||0
+    ubicacion||'', fechaIngreso||new Date().toISOString().split('T')[0], proveedor||'', precioUnitario||0,
+    stockMinimo ?? 10
   ]);
   res.status(201).json(queryOne('SELECT * FROM materiales WHERE id = ?', [getLastId()]));
 });
@@ -199,12 +204,12 @@ app.post('/materiales', authMiddleware(['admin','almacen']), (req, res) => {
 app.put('/materiales/:id', authMiddleware(['admin','almacen']), (req, res) => {
   const existing = queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Material no encontrado' });
-  const { nombre, descripcion, categoria, cantidad, unidad, ubicacion, fechaIngreso, proveedor, precioUnitario } = req.body;
-  runSql(`UPDATE materiales SET nombre=?,descripcion=?,categoria=?,cantidad=?,unidad=?,ubicacion=?,fechaIngreso=?,proveedor=?,precioUnitario=? WHERE id=?`, [
+  const { nombre, descripcion, categoria, cantidad, unidad, ubicacion, fechaIngreso, proveedor, precioUnitario, stockMinimo } = req.body;
+  runSql(`UPDATE materiales SET nombre=?,descripcion=?,categoria=?,cantidad=?,unidad=?,ubicacion=?,fechaIngreso=?,proveedor=?,precioUnitario=?,stockMinimo=? WHERE id=?`, [
     nombre??existing.nombre, descripcion??existing.descripcion, categoria??existing.categoria,
     cantidad??existing.cantidad, unidad??existing.unidad, ubicacion??existing.ubicacion,
     fechaIngreso??existing.fechaIngreso, proveedor??existing.proveedor,
-    precioUnitario??existing.precioUnitario, req.params.id
+    precioUnitario??existing.precioUnitario, stockMinimo??existing.stockMinimo??10, req.params.id
   ]);
   res.json(queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]));
 });
@@ -213,6 +218,22 @@ app.patch('/materiales/:id', authMiddleware(['admin','almacen']), (req, res) => 
   if (!queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]))
     return res.status(404).json({ error: 'Material no encontrado' });
   if (req.body.cantidad !== undefined) runSql('UPDATE materiales SET cantidad=? WHERE id=?', [req.body.cantidad, req.params.id]);
+  res.json(queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]));
+});
+
+// Ajustar stock directamente (solo admin)
+app.post('/materiales/:id/ajustar', authMiddleware(['admin']), (req, res) => {
+  const { cantidad, motivo } = req.body;
+  if (cantidad === undefined || cantidad < 0) return res.status(400).json({ error: 'Cantidad válida requerida' });
+  const material = queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]);
+  if (!material) return res.status(404).json({ error: 'Material no encontrado' });
+
+  const diferencia = cantidad - material.cantidad;
+  runSql('UPDATE materiales SET cantidad=? WHERE id=?', [cantidad, req.params.id]);
+  runSql(`INSERT INTO movimientos VALUES (NULL,?,?,?,?,?,?,?,?)`, [
+    req.params.id, diferencia > 0 ? 'ingreso' : 'salida', Math.abs(diferencia),
+    new Date().toISOString(), `Ajuste: ${motivo||'Corrección de inventario'}`, '', req.user.nombre, ''
+  ]);
   res.json(queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]));
 });
 
@@ -307,6 +328,42 @@ app.get('/movimientos/resumen/historial', (req, res) => {
   });
 });
 
+// ==================== USUARIOS (solo admin) ====================
+
+app.get('/api/usuarios', authMiddleware(['admin']), (_req, res) => {
+  res.json(queryAll('SELECT id, username, nombre, rol, activo FROM usuarios ORDER BY id'));
+});
+
+app.post('/api/usuarios', authMiddleware(['admin']), (req, res) => {
+  const { username, password, nombre, rol } = req.body;
+  if (!username || !password || !nombre || !rol) return res.status(400).json({ error: 'Todos los campos son requeridos' });
+  if (!['admin','almacen','ventas'].includes(rol)) return res.status(400).json({ error: 'Rol inválido' });
+  try {
+    const hashed = bcrypt.hashSync(password, 10);
+    runSql('INSERT INTO usuarios VALUES (NULL,?,?,?,?,1)', [username, hashed, nombre, rol]);
+    res.status(201).json({ id: getLastId(), username, nombre, rol, activo: 1 });
+  } catch { res.status(400).json({ error: 'El usuario ya existe' }); }
+});
+
+app.put('/api/usuarios/:id', authMiddleware(['admin']), (req, res) => {
+  const user = queryOne('SELECT * FROM usuarios WHERE id=?', [req.params.id]);
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+  const { username, password, nombre, rol, activo } = req.body;
+  let sql = 'UPDATE usuarios SET username=?, nombre=?, rol=?, activo=? WHERE id=?';
+  let params = [username||user.username, nombre||user.nombre, rol||user.rol, activo??user.activo, req.params.id];
+  if (password) { sql = 'UPDATE usuarios SET username=?, password=?, nombre=?, rol=?, activo=? WHERE id=?'; params = [username||user.username, bcrypt.hashSync(password,10), nombre||user.nombre, rol||user.rol, activo??user.activo, req.params.id]; }
+  runSql(sql, params);
+  res.json({ id: Number(req.params.id), username: params[0], nombre: params[2], rol: params[3], activo: params[4] });
+});
+
+app.delete('/api/usuarios/:id', authMiddleware(['admin']), (req, res) => {
+  const user = queryOne('SELECT * FROM usuarios WHERE id=?', [req.params.id]);
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+  if (Number(req.params.id) === req.user.id) return res.status(400).json({ error: 'No puedes eliminarte a ti mismo' });
+  runSql('DELETE FROM usuarios WHERE id=?', [req.params.id]);
+  res.status(204).send();
+});
+
 // ==================== DASHBOARD ====================
 
 app.get('/dashboard', (_req, res) => {
@@ -314,11 +371,11 @@ app.get('/dashboard', (_req, res) => {
     totalMateriales: queryOne('SELECT COUNT(*) as t FROM materiales').t,
     totalStock: queryOne('SELECT SUM(cantidad) as t FROM materiales').t || 0,
     totalValor: queryOne('SELECT SUM(cantidad*precioUnitario) as t FROM materiales').t || 0,
-    bajosStock: queryOne("SELECT COUNT(*) as t FROM materiales WHERE cantidad<10").t,
+    bajosStock: queryOne("SELECT COUNT(*) as t FROM materiales WHERE cantidad < stockMinimo").t,
     ingresosHoy: queryOne("SELECT COUNT(*) as t FROM movimientos WHERE tipo='ingreso' AND date(fecha)=date('now')").t,
     salidasHoy: queryOne("SELECT COUNT(*) as t FROM movimientos WHERE tipo='salida' AND date(fecha)=date('now')").t,
     movimientosRecientes: queryAll(`SELECT m.*, mt.nombre as materialNombre FROM movimientos m LEFT JOIN materiales mt ON mt.id=m.materialId ORDER BY m.fecha DESC LIMIT 5`),
-    materialesBajosStock: queryAll('SELECT * FROM materiales WHERE cantidad<10 ORDER BY cantidad ASC LIMIT 5')
+    materialesBajosStock: queryAll('SELECT * FROM materiales WHERE cantidad < stockMinimo ORDER BY cantidad ASC LIMIT 5')
   });
 });
 
@@ -328,7 +385,8 @@ initDatabase().then(() => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     console.log(`📦 API: /materiales`);
     console.log(`📦 API: /movimientos`);
-    console.log(`📊 API: /dashboard`);
+    console.log(`� API: /api/usuarios`);
+    console.log(`�📊 API: /dashboard`);
     console.log(`📈 API: /movimientos/resumen/historial`);
     console.log(`📎 API: /uploads (comprobantes)`);
   });

@@ -28,4 +28,8 @@ export class MaterialService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  ajustarStock(id: number, cantidad: number, motivo: string): Observable<Material> {
+    return this.http.post<Material>(`${this.apiUrl}/${id}/ajustar`, { cantidad, motivo });
+  }
 }

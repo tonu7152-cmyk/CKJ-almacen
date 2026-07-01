@@ -149,6 +149,28 @@ table {
   vertical-align: middle;
 }
 
+/* Stock alert styles */
+.stock-alert-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-left: 4px;
+  color: #f57c00;
+}
+
+.stock-alert-icon.critical {
+  color: #d32f2f;
+}
+
+.stock-critical .mdc-evolution-chip__text-label {
+  color: #d32f2f !important;
+}
+
+.stock-warning .mdc-evolution-chip__text-label {
+  color: #f57c00 !important;
+}
+
 .no-data span {
   display: block;
   margin-top: 8px;

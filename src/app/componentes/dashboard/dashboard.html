@@ -131,7 +131,7 @@
         <mat-card class="low-stock-card">
           <mat-card-header>
             <mat-card-title>Materiales con Stock Bajo</mat-card-title>
-            <mat-card-subtitle>Materiales con menos de 10 unidades</mat-card-subtitle>
+            <mat-card-subtitle>Materiales por debajo del stock mínimo</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div class="low-stock-list">
@@ -139,7 +139,7 @@
                 <div class="low-stock-item">
                   <div class="low-stock-info">
                     <span class="low-stock-name">{{ mat.nombre }}</span>
-                    <span class="low-stock-unit">{{ mat.unidad }}</span>
+                    <span class="low-stock-unit">{{ mat.unidad }} (mín: {{ mat.stockMinimo || 10 }})</span>
                   </div>
                   <mat-chip color="warn" highlighted>{{ mat.cantidad }}</mat-chip>
                 </div>

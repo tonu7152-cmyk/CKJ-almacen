@@ -25,6 +25,7 @@ export interface DashboardData {
     nombre: string;
     cantidad: number;
     unidad: string;
+    stockMinimo?: number;
   }[];
 }
 
