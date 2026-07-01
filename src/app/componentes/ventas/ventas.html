@@ -149,7 +149,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of carrito; track item.material.id; let i = $index) {
+                @for (item of boletaData.items; track item.material.id; let i = $index) {
                   <tr>
                     <td>{{ i + 1 }}</td>
                     <td>{{ item.material.nombre }}</td>
@@ -163,11 +163,11 @@
             <div class="boleta-divider"></div>
             <div class="boleta-total">
               <span>Total:</span>
-              <span class="boleta-monto">{{ totalVenta | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="boleta-monto">{{ boletaData.total | currency:'USD':'symbol':'1.2-2' }}</span>
             </div>
             <div class="boleta-total">
               <span>Son:</span>
-              <span>{{ totalEnLetras }}</span>
+              <span>{{ boletaData.totalEnLetras }}</span>
             </div>
           </div>
           <div class="boleta-footer">

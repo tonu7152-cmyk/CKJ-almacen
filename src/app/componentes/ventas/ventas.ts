@@ -104,7 +104,10 @@ export class VentasComponent implements OnInit {
   }
 
   get totalEnLetras(): string {
-    const num = this.totalVenta;
+    return this.numeroALetras(this.totalVenta);
+  }
+
+  private numeroALetras(num: number): string {
     if (num === 0) return 'CERO DOLARES';
     const entero = Math.floor(num);
     const decimal = Math.round((num - entero) * 100);
@@ -153,19 +156,24 @@ export class VentasComponent implements OnInit {
   mostrarBoleta(): void {
     const now = new Date();
     const fecha = now.toLocaleDateString('es-PE') + ' ' + now.toLocaleTimeString('es-PE');
+    const items = [...this.carrito];
+    const total = this.totalVenta;
     const num = 'B001-' + now.getFullYear()
       + String(now.getMonth() + 1).padStart(2, '0')
       + String(now.getDate()).padStart(2, '0')
-      + '-' + String(this.carrito.length).padStart(4, '0');
+      + '-' + String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
 
     this.boletaData = {
       numero: num,
       fecha: fecha,
       cliente: this.clienteCtrl.value,
+      items: items,
+      total: total,
+      totalEnLetras: this.numeroALetras(total),
     };
-    this.cdr.detectChanges();
     this.carrito = [];
     this.clienteCtrl.reset();
+    this.cdr.detectChanges();
     this.snackBar.open('Venta registrada correctamente', 'OK', {duration:3000});
   }
 
