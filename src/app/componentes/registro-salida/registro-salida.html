@@ -1,1 +1,83 @@
-<p>registro-salida works!</p>
+<div class="salida-container">
+  <div class="header">
+    <div>
+      <h1>Registrar Salida</h1>
+      <p class="subtitle">Registra la salida de materiales del almacén</p>
+    </div>
+    <button mat-stroked-button routerLink="/materiales">
+      <mat-icon>inventory_2</mat-icon>
+      Ver Inventario
+    </button>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span>Cargando materiales...</span>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="salida-form">
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Material</mat-label>
+              <mat-select formControlName="materialId" required>
+                @for (mat of materiales; track mat.id) {
+                  <mat-option [value]="mat.id">
+                    {{ mat.nombre }} — Stock: {{ mat.cantidad }} {{ mat.unidad }}
+                  </mat-option>
+                }
+              </mat-select>
+              @if (form.get('materialId')?.hasError('required')) {
+                <mat-error>Selecciona un material</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Cantidad</mat-label>
+              <input matInput type="number" formControlName="cantidad" placeholder="0" step="0.01" min="0.01" required />
+              <span matTextPrefix>−&nbsp;</span>
+              @if (form.get('cantidad')?.hasError('required')) {
+                <mat-error>Ingresa una cantidad</mat-error>
+              }
+              @if (form.get('cantidad')?.hasError('min')) {
+                <mat-error>La cantidad debe ser mayor a 0</mat-error>
+              }
+            </mat-form-field>
+
+            @if (selectedMaterial) {
+              <div class="stock-info full-width">
+                <mat-icon>info</mat-icon>
+                <span>
+                  Stock disponible: <strong>{{ selectedMaterial.cantidad }} {{ selectedMaterial.unidad }}</strong>
+                  @if (selectedMaterial.ubicacion) {
+                    &nbsp;· Ubicación: <strong>{{ selectedMaterial.ubicacion }}</strong>
+                  }
+                </span>
+              </div>
+            }
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Destino</mat-label>
+              <input matInput formControlName="destino" placeholder="Ej: Obra Edificio Central (opcional)" />
+              <mat-icon matSuffix>location_on</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="form.reset({ usuario: 'Admin' })">Limpiar</button>
+            <button mat-raised-button color="warn" type="submit" [disabled]="form.invalid || submitting">
+              @if (submitting) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                <mat-icon>remove_circle</mat-icon>
+              }
+              Registrar Salida
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,1 +1,156 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <div class="header">
+    <h1>Dashboard</h1>
+    <p class="subtitle">Resumen del estado del almacén</p>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Cargando dashboard...</span>
+    </div>
+  } @else if (error) {
+    <div class="error-container">
+      <mat-icon color="warn">error</mat-icon>
+      <p>Error al cargar los datos. Verifica que el servidor esté corriendo.</p>
+      <button mat-raised-button color="primary" (click)="loadDashboard()">Reintentar</button>
+    </div>
+  } @else if (data) {
+    <div class="cards-grid">
+      <mat-card class="metric-card total">
+        <mat-card-content>
+          <div class="metric-icon"><mat-icon>inventory_2</mat-icon></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ data.totalMateriales }}</span>
+            <span class="metric-label">Materiales</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="metric-card stock">
+        <mat-card-content>
+          <div class="metric-icon"><mat-icon>stacked_line_chart</mat-icon></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ data.totalStock }}</span>
+            <span class="metric-label">Total en Stock</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="metric-card valor">
+        <mat-card-content>
+          <div class="metric-icon"><mat-icon>paid</mat-icon></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ data.totalValor | currency:'USD':'symbol':'1.2-2' }}</span>
+            <span class="metric-label">Valor Total</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="metric-card warning">
+        <mat-card-content>
+          <div class="metric-icon"><mat-icon>warning_amber</mat-icon></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ data.bajosStock }}</span>
+            <span class="metric-label">Stock Bajo</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="metric-card ingreso">
+        <mat-card-content>
+          <div class="metric-icon"><mat-icon>login</mat-icon></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ data.ingresosHoy }}</span>
+            <span class="metric-label">Ingresos Hoy</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="metric-card salida">
+        <mat-card-content>
+          <div class="metric-icon"><mat-icon>logout</mat-icon></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ data.salidasHoy }}</span>
+            <span class="metric-label">Salidas Hoy</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="bottom-grid">
+      <mat-card class="recent-card">
+        <mat-card-header>
+          <mat-card-title>Movimientos Recientes</mat-card-title>
+          <mat-card-subtitle>Últimos 5 movimientos registrados</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <table mat-table [dataSource]="data.movimientosRecientes" class="full-width">
+            <ng-container matColumnDef="materialNombre">
+              <th mat-header-cell *matHeaderCellDef>Material</th>
+              <td mat-cell *matCellDef="let m">{{ m.materialNombre }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="tipo">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let m">
+                <span [class.ingreso]="m.tipo === 'ingreso'" [class.salida]="m.tipo === 'salida'" class="tipo-badge">
+                  {{ m.tipo === 'ingreso' ? 'Ingreso' : 'Salida' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="cantidad">
+              <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+              <td mat-cell *matCellDef="let m">{{ m.cantidad }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let m">{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="origenDestino">
+              <th mat-header-cell *matHeaderCellDef>{{'Origen/Destino'}}</th>
+              <td mat-cell *matCellDef="let m">{{ m.proveedor || m.destino || '—' }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            @if (data.movimientosRecientes.length === 0) {
+              <tr class="mat-row">
+                <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">Sin movimientos recientes</td>
+              </tr>
+            }
+          </table>
+        </mat-card-content>
+      </mat-card>
+
+      @if (data.materialesBajosStock.length > 0) {
+        <mat-card class="low-stock-card">
+          <mat-card-header>
+            <mat-card-title>Materiales con Stock Bajo</mat-card-title>
+            <mat-card-subtitle>Materiales con menos de 10 unidades</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="low-stock-list">
+              @for (mat of data.materialesBajosStock; track mat.id) {
+                <div class="low-stock-item">
+                  <div class="low-stock-info">
+                    <span class="low-stock-name">{{ mat.nombre }}</span>
+                    <span class="low-stock-unit">{{ mat.unidad }}</span>
+                  </div>
+                  <mat-chip color="warn" highlighted>{{ mat.cantidad }}</mat-chip>
+                </div>
+              }
+            </div>
+            <div class="low-stock-action">
+              <button mat-stroked-button color="primary" routerLink="/materiales">Ir al Inventario</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

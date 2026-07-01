@@ -2,7 +2,33 @@
   flex: 1 1 auto;
 }
 
+.toolbar-logo {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  border-radius: 6px;
+}
+
+.toolbar-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
 nav {
   display: flex;
   gap: 4px;
+}
+
+nav a {
+  color: #000000 !important;
+}
+
+nav a:hover {
+  background-color: rgba(0,0,0,0.08) !important;
+}
+
+@media (max-width: 768px) {
+  .toolbar-title {
+    display: none;
+  }
 }

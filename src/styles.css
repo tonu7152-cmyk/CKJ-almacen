@@ -5,6 +5,55 @@
 
 nav a {
   margin: 0 10px;
-  color: white !important;
   text-decoration: none;
+}
+
+/* Fondo dinámico tipo ferretería */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    /* Patrón de herramientas muy sutil */
+    radial-gradient(circle at 20% 50%, rgba(255, 152, 0, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(33, 150, 243, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(76, 175, 80, 0.03) 0%, transparent 50%),
+    /* Rayas tipo textura metálica muy sutil */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.008) 2px,
+      rgba(0,0,0,0.008) 4px
+    ),
+    /* Fondo base */
+    linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Asegurar que mat-toolbar se vea bien con el fondo */
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Contenedores principales con fondo semi-transparente */
+.container, .dashboard-container, .reportes-container {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px auto;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* Tarjetas con fondo sólido */
+.mat-mdc-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px);
 }

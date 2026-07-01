@@ -1,1 +1,207 @@
-<p>reportes works!</p>
+<div class="reportes-container">
+  <div class="header">
+    <div>
+      <h1>Historial de Movimientos</h1>
+      <p class="subtitle">Consulta ventas, ingresos y movimientos del almacén</p>
+    </div>
+  </div>
+
+  <!-- Selector de período -->
+  <mat-card class="periodo-card">
+    <mat-card-content>
+      <div class="periodo-header">
+        <span class="periodo-label">Período:</span>
+        <mat-button-toggle-group
+          [value]="periodoToggle"
+          (change)="cambiarPeriodo($event.value)"
+          aria-label="Seleccionar período"
+        >
+          <mat-button-toggle value="semana">Última Semana</mat-button-toggle>
+          <mat-button-toggle value="mes">Último Mes</mat-button-toggle>
+          <mat-button-toggle value="all">Todo</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tarjetas de resumen -->
+  <div class="summary-cards">
+    <mat-card class="summary-card total">
+      <mat-card-content>
+        <mat-icon>receipt_long</mat-icon>
+        <div class="summary-info">
+          <span class="summary-value">{{ historialData?.resumen?.totalMovimientos || 0 }}</span>
+          <span class="summary-label">Movimientos</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card ingreso">
+      <mat-card-content>
+        <mat-icon>add_circle</mat-icon>
+        <div class="summary-info">
+          <span class="summary-value">{{ totalIngresosCount }}</span>
+          <span class="summary-label">Ingresos ({{ totalIngresos }} unid.)</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card salida">
+      <mat-card-content>
+        <mat-icon>remove_circle</mat-icon>
+        <div class="summary-info">
+          <span class="summary-value">{{ totalSalidasCount }}</span>
+          <span class="summary-label">Salidas ({{ totalSalidas }} unid.)</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card ventas">
+      <mat-card-content>
+        <mat-icon>payments</mat-icon>
+        <div class="summary-info">
+          <span class="summary-value">{{ valorVentas | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="summary-label">Valor Ventas</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tipo">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="ingreso">Ingreso</mat-option>
+            <mat-option value="salida">Salida</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Material</mat-label>
+          <mat-select formControlName="materialId">
+            <mat-option value="">Todos</mat-option>
+            @for (mat of materiales; track mat.id) {
+              <mat-option [value]="mat.id">{{ mat.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha Desde</mat-label>
+          <input matInput [matDatepicker]="desde" formControlName="fechaDesde" />
+          <mat-datepicker-toggle matIconSuffix [for]="desde"></mat-datepicker-toggle>
+          <mat-datepicker #desde></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha Hasta</mat-label>
+          <input matInput [matDatepicker]="hasta" formControlName="fechaHasta" />
+          <mat-datepicker-toggle matIconSuffix [for]="hasta"></mat-datepicker-toggle>
+          <mat-datepicker #hasta></mat-datepicker>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" (click)="applyFilters()" type="button">
+            <mat-icon>filter_alt</mat-icon>
+            Filtrar
+          </button>
+          <button mat-stroked-button (click)="clearFilters()" type="button">
+            <mat-icon>clear</mat-icon>
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Cargando historial {{ periodoToggle === 'semana' ? 'de la semana' : periodoToggle === 'mes' ? 'del mes' : 'completo' }}...</span>
+    </div>
+  } @else {
+    <mat-card class="table-card">
+      <mat-card-content>
+        <div class="table-header-info">
+          <span class="periodo-info">
+            {{ getPeriodoLabel() }} — {{ dataSource.data.length }} movimientos
+          </span>
+        </div>
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSource" matSort class="full-width">
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
+              <td mat-cell *matCellDef="let m">{{ m.id }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="materialNombre">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Material</th>
+              <td mat-cell *matCellDef="let m">{{ m.materialNombre }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="tipo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+              <td mat-cell *matCellDef="let m">
+                <span [class.ingreso]="m.tipo === 'ingreso'" [class.salida]="m.tipo === 'salida'" class="tipo-badge">
+                  {{ m.tipo === 'ingreso' ? 'Ingreso' : 'Salida' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="cantidad">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Cantidad</th>
+              <td mat-cell *matCellDef="let m">{{ m.cantidad }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+              <td mat-cell *matCellDef="let m">{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="origenDestino">
+              <th mat-header-cell *matHeaderCellDef>Origen/Destino</th>
+              <td mat-cell *matCellDef="let m">{{ m.proveedor || m.destino || '—' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="comprobante">
+              <th mat-header-cell *matHeaderCellDef>Comprobante</th>
+              <td mat-cell *matCellDef="let m">
+                @if (m.comprobante) {
+                  <button mat-icon-button color="accent" (click)="verComprobante(m.comprobante!)"
+                    matTooltip="Ver comprobante">
+                    <mat-icon>description</mat-icon>
+                  </button>
+                } @else {
+                  <span class="no-comprobante">—</span>
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="usuario">
+              <th mat-header-cell *matHeaderCellDef>Usuario</th>
+              <td mat-cell *matCellDef="let m">{{ m.usuario }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            @if (dataSource.filteredData.length === 0) {
+              <tr class="mat-row">
+                <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+                  <mat-icon>search_off</mat-icon>
+                  <span>No se encontraron movimientos</span>
+                </td>
+              </tr>
+            }
+          </table>
+        </div>
+
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" pageSize="10" showFirstLastButtons></mat-paginator>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

@@ -3,13 +3,39 @@ const cors = require('cors');
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 const PORT = 3000;
 const DB_PATH = path.join(__dirname, 'database.sqlite');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+
+// Crear carpeta uploads si no existe
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+// Configurar multer para comprobantes
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = `comprobante_${Date.now()}_${Math.random().toString(36).slice(2,8)}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) cb(null, true);
+    else cb(new Error('Solo PDF, JPG, PNG, GIF, WEBP'));
+  }
+});
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 let db;
 
@@ -60,9 +86,13 @@ async function initDatabase() {
     tipo TEXT NOT NULL CHECK(tipo IN ('ingreso','salida')), cantidad REAL NOT NULL,
     fecha TEXT DEFAULT (datetime('now','localtime')),
     proveedor TEXT DEFAULT '', destino TEXT DEFAULT '', usuario TEXT DEFAULT 'Admin',
+    comprobante TEXT DEFAULT '',
     FOREIGN KEY (materialId) REFERENCES materiales(id)
   )`);
   saveDb();
+
+  // Agregar columna comprobante si no existe (para BD ya creadas)
+  try { db.run(`ALTER TABLE movimientos ADD COLUMN comprobante TEXT DEFAULT ''`); saveDb(); } catch(e) {}
 
   if (queryOne('SELECT COUNT(*) as total FROM materiales').total === 0) seedDatabase();
 }
@@ -79,12 +109,12 @@ function seedDatabase() {
   for (const m of mats) db.run(`INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?)`, m);
 
   const movs = [
-    [1,'ingreso',50,'2026-06-28T10:00:00','Constructora ABC','','Admin'],
-    [2,'salida',10,'2026-06-29T09:00:00','','Obra Edificio Central','Admin'],
-    [4,'salida',5,'2026-06-29T14:00:00','','Mantenimiento Planta 2','Admin'],
-    [5,'ingreso',10,'2026-06-30T08:00:00','Pinturas del Valle','','Admin']
+    [1,'ingreso',50,'2026-06-28T10:00:00','Constructora ABC','','Admin',''],
+    [2,'salida',10,'2026-06-29T09:00:00','','Obra Edificio Central','Admin',''],
+    [4,'salida',5,'2026-06-29T14:00:00','','Mantenimiento Planta 2','Admin',''],
+    [5,'ingreso',10,'2026-06-30T08:00:00','Pinturas del Valle','','Admin','']
   ];
-  for (const m of movs) db.run(`INSERT INTO movimientos VALUES (NULL,?,?,?,?,?,?,?)`, m);
+  for (const m of movs) db.run(`INSERT INTO movimientos VALUES (NULL,?,?,?,?,?,?,?,?)`, m);
 
   saveDb();
   console.log('✅ Datos iniciales sembrados correctamente');
@@ -154,7 +184,7 @@ app.get('/movimientos/:id', (req, res) => {
   res.json(m);
 });
 
-app.post('/movimientos', (req, res) => {
+app.post('/movimientos', upload.single('comprobante'), (req, res) => {
   const { materialId, tipo, cantidad, proveedor, destino, usuario } = req.body;
   if (!materialId || !tipo || !cantidad) return res.status(400).json({ error: 'materialId, tipo y cantidad son obligatorios' });
   if (!['ingreso','salida'].includes(tipo)) return res.status(400).json({ error: 'tipo debe ser ingreso o salida' });
@@ -163,13 +193,58 @@ app.post('/movimientos', (req, res) => {
   if (!material) return res.status(404).json({ error: 'Material no encontrado' });
   if (tipo === 'salida' && material.cantidad < cantidad) return res.status(400).json({ error: 'Stock insuficiente' });
 
-  const nuevaCantidad = tipo === 'ingreso' ? material.cantidad + cantidad : material.cantidad - cantidad;
+  const comprobante = req.file ? `/uploads/${req.file.filename}` : '';
+
+  const nuevaCantidad = tipo === 'ingreso' ? material.cantidad + Number(cantidad) : material.cantidad - Number(cantidad);
   runSql('UPDATE materiales SET cantidad=? WHERE id=?', [nuevaCantidad, materialId]);
-  runSql(`INSERT INTO movimientos VALUES (NULL,?,?,?,?,?,?,?)`, [
-    materialId, tipo, cantidad, new Date().toISOString(),
-    tipo === 'ingreso' ? (proveedor||'') : '', tipo === 'salida' ? (destino||'') : '', usuario||'Admin'
+  runSql(`INSERT INTO movimientos VALUES (NULL,?,?,?,?,?,?,?,?)`, [
+    materialId, tipo, Number(cantidad), new Date().toISOString(),
+    tipo === 'ingreso' ? (proveedor||'') : '', tipo === 'salida' ? (destino||'') : '', usuario||'Admin',
+    comprobante
   ]);
   res.status(201).json(queryOne(`SELECT m.*, mt.nombre as materialNombre FROM movimientos m LEFT JOIN materiales mt ON mt.id=m.materialId WHERE m.id=?`, [getLastId()]));
+});
+
+// ==================== HISTORIAL / RESUMEN ====================
+
+app.get('/movimientos/resumen/historial', (req, res) => {
+  const { periodo } = req.query; // 'semana' | 'mes' | 'all'
+
+  let dateFilter = '';
+  if (periodo === 'semana') {
+    dateFilter = "WHERE fecha >= datetime('now', '-7 days')";
+  } else if (periodo === 'mes') {
+    dateFilter = "WHERE fecha >= datetime('now', '-30 days')";
+  }
+
+  const movimientos = queryAll(`
+    SELECT m.*, mt.nombre as materialNombre, mt.precioUnitario
+    FROM movimientos m
+    LEFT JOIN materiales mt ON mt.id=m.materialId
+    ${dateFilter}
+    ORDER BY m.fecha DESC
+  `);
+
+  const totalIngresos = movimientos.filter(m => m.tipo === 'ingreso').length;
+  const totalSalidas = movimientos.filter(m => m.tipo === 'salida').length;
+  const cantIngresada = movimientos.filter(m => m.tipo === 'ingreso').reduce((s, m) => s + m.cantidad, 0);
+  const cantSalida = movimientos.filter(m => m.tipo === 'salida').reduce((s, m) => s + m.cantidad, 0);
+  const valorVentas = movimientos
+    .filter(m => m.tipo === 'salida')
+    .reduce((s, m) => s + (m.cantidad * (m.precioUnitario || 0)), 0);
+
+  res.json({
+    periodo: periodo || 'all',
+    movimientos,
+    resumen: {
+      totalMovimientos: movimientos.length,
+      totalIngresos,
+      totalSalidas,
+      cantIngresada,
+      cantSalida,
+      valorVentas
+    }
+  });
 });
 
 // ==================== DASHBOARD ====================
@@ -194,5 +269,7 @@ initDatabase().then(() => {
     console.log(`📦 API: /materiales`);
     console.log(`📦 API: /movimientos`);
     console.log(`📊 API: /dashboard`);
+    console.log(`📈 API: /movimientos/resumen/historial`);
+    console.log(`📎 API: /uploads (comprobantes)`);
   });
 });
