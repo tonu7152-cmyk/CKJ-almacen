@@ -117,8 +117,11 @@
           <button mat-stroked-button (click)="cerrarBoleta()">
             <mat-icon>close</mat-icon> Cerrar
           </button>
+          <button mat-raised-button color="accent" (click)="descargarPDF()">
+            <mat-icon>picture_as_pdf</mat-icon> Descargar PDF
+          </button>
           <button mat-raised-button color="primary" (click)="imprimirBoleta()">
-            <mat-icon>print</mat-icon> Imprimir / PDF
+            <mat-icon>print</mat-icon> Imprimir
           </button>
         </div>
         <div class="boleta" id="boleta-print">

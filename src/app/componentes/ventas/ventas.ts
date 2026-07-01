@@ -179,10 +179,73 @@ export class VentasComponent implements OnInit {
 
   cerrarBoleta(): void {
     this.boletaData = null;
+    this.cdr.detectChanges();
   }
 
   imprimirBoleta(): void {
     window.print();
+  }
+
+  descargarPDF(): void {
+    import('jspdf').then(({ jsPDF }) => {
+      import('jspdf-autotable').then((mod: any) => {
+        const autoTable = mod.default || mod;
+        const doc = new jsPDF();
+        const data = this.boletaData;
+        if (!data) return;
+
+        doc.setFontSize(16);
+        doc.setTextColor(21, 101, 192);
+        doc.text('CKJ - Sistema de Almacén', 105, 20, { align: 'center' as any });
+
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text('RUC: 20600000001 | Av. Industrial 123 - Lima | Tel: (01) 555-0001', 105, 26, { align: 'center' as any });
+
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text('BOLETA DE VENTA', 105, 34, { align: 'center' as any });
+
+        doc.setFontSize(9);
+        doc.text('Nro: ' + data.numero, 14, 42);
+        doc.text('Fecha: ' + data.fecha, 14, 48);
+        doc.text('Cliente: ' + data.cliente, 14, 54);
+
+        const rows = data.items.map((item: any, i: number) => [
+          String(i + 1),
+          item.material.nombre,
+          String(item.cantidad),
+          '$' + (item.material.precioUnitario || 0).toFixed(2),
+          '$' + item.subtotal.toFixed(2),
+        ]);
+
+        autoTable(doc, {
+          startY: 60,
+          head: [['#', 'Producto', 'Cant', 'P.Unit', 'Total']],
+          body: rows,
+          theme: 'grid' as any,
+          headStyles: { fillColor: [21, 101, 192], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+          bodyStyles: { fontSize: 8 },
+          styles: { cellPadding: 2 },
+        });
+
+        const finalY = (doc as any).lastAutoTable?.finalY || 80;
+
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Total: $' + data.total.toFixed(2), 195, finalY + 10, { align: 'right' as any });
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Son: ' + data.totalEnLetras, 14, finalY + 10);
+
+        doc.setFontSize(7);
+        doc.setTextColor(150);
+        doc.text('Gracias por su compra! - Generado por CKJ', 105, finalY + 25, { align: 'center' as any });
+
+        doc.save('boleta_' + data.numero.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf');
+      });
+    });
   }
 
   formatearPrecio(precio: number | undefined): number {
