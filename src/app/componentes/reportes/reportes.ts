@@ -181,6 +181,50 @@ export class Reportes implements OnInit {
     window.open(`http://localhost:3000${comprobante}`, '_blank');
   }
 
+  descargarBoleta(m: Movimiento): void {
+    if (!m.destino) return;
+    const doc = new jsPDF();
+    const precio = m.precioUnitario || 0;
+    const total = m.cantidad * precio;
+    const fecha = m.fecha ? new Date(m.fecha).toLocaleString('es-PE') : '';
+
+    const numBoleta = 'B001-' + (m.id ? String(m.id).padStart(6, '0') : '000001');
+
+    doc.setFontSize(16);
+    doc.setTextColor(21, 101, 192);
+    doc.text('CKJ - Sistema de Almacén', 105, 20, { align: 'center' as any });
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text('RUC: 20600000001 | Av. Industrial 123 - Lima | Tel: (01) 555-0001', 105, 26, { align: 'center' as any });
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text('BOLETA DE VENTA', 105, 34, { align: 'center' as any });
+    doc.setFontSize(9);
+    doc.text('Nro: ' + numBoleta, 14, 42);
+    doc.text('Fecha: ' + fecha, 14, 48);
+    doc.text('Cliente: ' + (m.destino || ''), 14, 54);
+
+    autoTable(doc, {
+      startY: 60,
+      head: [['#', 'Producto', 'Cant', 'P.Unit', 'Total']],
+      body: [[ '1', m.materialNombre || 'Producto', String(m.cantidad), 'S/.' + precio.toFixed(2), 'S/.' + total.toFixed(2) ]],
+      theme: 'grid' as any,
+      headStyles: { fillColor: [21, 101, 192], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      styles: { cellPadding: 2 },
+    });
+
+    const finalY = (doc as any).lastAutoTable?.finalY || 80;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total: S/.' + total.toFixed(2), 195, finalY + 10, { align: 'right' as any });
+    doc.setFontSize(7);
+    doc.setTextColor(150);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Gracias por su compra! - Generado por CKJ', 105, finalY + 20, { align: 'center' as any });
+    doc.save('boleta_' + numBoleta.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf');
+  }
+
   getPeriodoLabel(): string {
     switch (this.periodoToggle) {
       case 'semana': return 'Últimos 7 días';

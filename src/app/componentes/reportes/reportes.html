@@ -180,7 +180,14 @@
                     matTooltip="Ver comprobante">
                     <mat-icon>description</mat-icon>
                   </button>
-                } @else {
+                }
+                @if (m.tipo === 'salida' && m.destino) {
+                  <button mat-icon-button color="primary" (click)="descargarBoleta(m)"
+                    matTooltip="Descargar boleta de venta">
+                    <mat-icon>receipt</mat-icon>
+                  </button>
+                }
+                @if (!m.comprobante && !(m.tipo === 'salida' && m.destino)) {
                   <span class="no-comprobante">—</span>
                 }
               </td>
