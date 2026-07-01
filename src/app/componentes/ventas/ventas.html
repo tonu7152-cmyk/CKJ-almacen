@@ -25,7 +25,7 @@
             <mat-option [value]="null">Seleccionar...</mat-option>
             @for (m of materiales; track m.id) {
               <mat-option [value]="m" [disabled]="m.cantidad &lt;= 0">
-                {{ m.nombre }} &mdash; Stock: {{ m.cantidad }} {{ m.unidad }} &mdash; {{ formatearPrecio(m.precioUnitario) | currency:'USD':'symbol':'1.2-2' }}
+                {{ m.nombre }} &mdash; Stock: {{ m.cantidad }} {{ m.unidad }} &mdash; {{ formatearPrecio(m.precioUnitario) | currency:'PEN':'symbol':'1.2-2' }}
               </mat-option>
             }
           </mat-select>
@@ -36,7 +36,7 @@
             <div class="selected-info">
               <strong>{{ productoSeleccionado.nombre }}</strong>
               <span>Stock: {{ productoSeleccionado.cantidad }} {{ productoSeleccionado.unidad }}</span>
-              <span>Precio: {{ productoSeleccionado.precioUnitario | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span>Precio: {{ productoSeleccionado.precioUnitario | currency:'PEN':'symbol':'1.2-2' }}</span>
             </div>
             <div class="selected-actions">
               <mat-form-field appearance="outline" class="qty-field">
@@ -82,8 +82,8 @@
                   <tr>
                     <td>{{ item.material.nombre }}</td>
                     <td>{{ item.cantidad }}</td>
-                    <td>{{ item.material.precioUnitario | currency:'USD':'symbol':'1.2-2' }}</td>
-                    <td class="subtotal">{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</td>
+                    <td>{{ item.material.precioUnitario | currency:'PEN':'symbol':'1.2-2' }}</td>
+                    <td class="subtotal">{{ item.subtotal | currency:'PEN':'symbol':'1.2-2' }}</td>
                     <td>
                       <button mat-icon-button color="warn" (click)="quitarDelCarrito(i)" matTooltip="Quitar">
                         <mat-icon>delete</mat-icon>
@@ -97,13 +97,13 @@
 
           <div class="carrito-total">
             <span class="total-label">TOTAL:</span>
-            <span class="total-value">{{ totalVenta | currency:'USD':'symbol':'1.2-2' }}</span>
+            <span class="total-value">{{ totalVenta | currency:'PEN':'symbol':'1.2-2' }}</span>
           </div>
 
           <button mat-raised-button color="primary" class="full-width btn-pagar"
             (click)="generarBoleta()" [disabled]="!clienteCtrl.value">
             <mat-icon>receipt</mat-icon>
-            Generar Boleta &mdash; {{ totalVenta | currency:'USD':'symbol':'1.2-2' }}
+            Generar Boleta &mdash; {{ totalVenta | currency:'PEN':'symbol':'1.2-2' }}
           </button>
         }
       </mat-card-content>
@@ -157,8 +157,8 @@
                     <td>{{ i + 1 }}</td>
                     <td>{{ item.material.nombre }}</td>
                     <td>{{ item.cantidad }}</td>
-                    <td>{{ item.material.precioUnitario | currency:'USD':'symbol':'1.2-2' }}</td>
-                    <td>{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</td>
+                    <td>{{ item.material.precioUnitario | currency:'PEN':'symbol':'1.2-2' }}</td>
+                    <td>{{ item.subtotal | currency:'PEN':'symbol':'1.2-2' }}</td>
                   </tr>
                 }
               </tbody>
@@ -166,7 +166,7 @@
             <div class="boleta-divider"></div>
             <div class="boleta-total">
               <span>Total:</span>
-              <span class="boleta-monto">{{ boletaData.total | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="boleta-monto">{{ boletaData.total | currency:'PEN':'symbol':'1.2-2' }}</span>
             </div>
             <div class="boleta-total">
               <span>Son:</span>

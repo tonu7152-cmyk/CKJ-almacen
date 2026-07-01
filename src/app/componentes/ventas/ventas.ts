@@ -108,7 +108,7 @@ export class VentasComponent implements OnInit {
   }
 
   private numeroALetras(num: number): string {
-    if (num === 0) return 'CERO DOLARES';
+    if (num === 0) return 'CERO SOLES';
     const entero = Math.floor(num);
     const decimal = Math.round((num - entero) * 100);
     const unidades = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ',
@@ -121,7 +121,7 @@ export class VentasComponent implements OnInit {
     else if (entero < 100) { const d = Math.floor(entero/10); const u = entero%10; letras = decenas[d] + (u>0?' Y '+unidades[u]:''); }
     else if (entero < 1000) { const c = Math.floor(entero/100); const r = entero%100; letras = centenas[c] + (r>0?' '+(r<=20?unidades[r]:''):''); }
     else letras = String(entero);
-    letras += entero === 1 ? ' DOLAR' : ' DOLARES';
+    letras += entero === 1 ? ' SOL' : ' SOLES';
     if (decimal > 0) letras += ' CON ' + decimal + '/100';
     return letras;
   }
@@ -215,8 +215,8 @@ export class VentasComponent implements OnInit {
           String(i + 1),
           item.material.nombre,
           String(item.cantidad),
-          '$' + (item.material.precioUnitario || 0).toFixed(2),
-          '$' + item.subtotal.toFixed(2),
+          'S/.' + (item.material.precioUnitario || 0).toFixed(2),
+          'S/.' + item.subtotal.toFixed(2),
         ]);
 
         autoTable(doc, {
@@ -233,7 +233,7 @@ export class VentasComponent implements OnInit {
 
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text('Total: $' + data.total.toFixed(2), 195, finalY + 10, { align: 'right' as any });
+        doc.text('Total: S/.' + data.total.toFixed(2), 195, finalY + 10, { align: 'right' as any });
 
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
