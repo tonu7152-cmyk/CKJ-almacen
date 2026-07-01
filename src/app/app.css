@@ -16,6 +16,7 @@
 
 nav {
   display: flex;
+  align-items: center;
   gap: 4px;
 }
 
@@ -27,8 +28,32 @@ nav a:hover {
   background-color: rgba(0,0,0,0.08) !important;
 }
 
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 16px;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  font-size: 13px;
+  color: #000;
+}
+
+.user-name {
+  font-weight: 500;
+}
+
+.user-rol {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 @media (max-width: 768px) {
   .toolbar-title {
+    display: none;
+  }
+  .user-name, .user-rol {
     display: none;
   }
 }

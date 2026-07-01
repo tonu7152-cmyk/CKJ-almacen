@@ -4,10 +4,18 @@
       <h1>Inventario de Materiales</h1>
       <p class="subtitle">Gestión completa del catálogo de materiales</p>
     </div>
-    <button mat-raised-button color="primary" (click)="openDialog()">
-      <mat-icon>add</mat-icon>
-      Nuevo Material
-    </button>
+    <div class="header-actions">
+      @if (auth.hasRole(['admin','almacen'])) {
+        <button mat-raised-button color="primary" (click)="openDialog()">
+          <mat-icon>add</mat-icon>
+          Nuevo Material
+        </button>
+      }
+      <button mat-raised-button color="accent" (click)="exportPDF()" class="btn-export">
+        <mat-icon>picture_as_pdf</mat-icon>
+        PDF
+      </button>
+    </div>
   </div>
 
   <div class="toolbar">
@@ -98,12 +106,16 @@
           <th mat-header-cell *matHeaderCellDef>Acciones</th>
           <td mat-cell *matCellDef="let material">
             <div class="acciones-cell">
-              <button mat-icon-button color="primary" (click)="openDialog(material)" matTooltip="Editar material">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="deleteMaterial(material.id!, material.nombre)" matTooltip="Eliminar material">
-                <mat-icon>delete</mat-icon>
-              </button>
+              @if (auth.hasRole(['admin','almacen'])) {
+                <button mat-icon-button color="primary" (click)="openDialog(material)" matTooltip="Editar material">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              }
+              @if (auth.hasRole(['admin'])) {
+                <button mat-icon-button color="warn" (click)="deleteMaterial(material.id!, material.nombre)" matTooltip="Eliminar material">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
             </div>
           </td>
         </ng-container>

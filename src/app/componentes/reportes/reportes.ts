@@ -20,6 +20,8 @@ import { MovimientoService } from '../../servicios/movimiento';
 import { MaterialService } from '../../servicios/material';
 import { Movimiento, HistorialResumen } from '../../modelos/movimiento';
 import { Material } from '../../modelos/material';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-reportes',
@@ -185,5 +187,69 @@ export class Reportes implements OnInit {
       case 'mes': return 'Últimos 30 días';
       default: return 'Todo el historial';
     }
+  }
+
+  exportPDF(): void {
+    const data = this.dataSource.data;
+    if (data.length === 0) {
+      this.snackBar.open('No hay datos para exportar', 'Cerrar', { duration: 2000 });
+      return;
+    }
+
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Título
+    doc.setFontSize(18);
+    doc.setTextColor(21, 101, 192);
+    doc.text('CKJ - Sistema de Almacén', pageWidth / 2, 20, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(60);
+    doc.text(`Historial de Movimientos - ${this.getPeriodoLabel()}`, pageWidth / 2, 28, { align: 'center' });
+
+    // Resumen
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+    const resumenY = 36;
+    doc.text(`Total: ${data.length} movimientos`, 14, resumenY);
+    doc.text(`Ingresos: ${this.totalIngresosCount} (${this.totalIngresos} unid.)`, 14, resumenY + 5);
+    doc.text(`Salidas: ${this.totalSalidasCount} (${this.totalSalidas} unid.)`, 14, resumenY + 10);
+    doc.text(`Valor Ventas: $${this.valorVentas.toFixed(2)}`, 14, resumenY + 15);
+
+    // Fecha de exportación
+    const fechaExport = new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' });
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Exportado: ${fechaExport}`, pageWidth - 14, resumenY, { align: 'right' });
+
+    // Tabla
+    const rows = data.map((m, i) => [
+      i + 1,
+      m.materialNombre || `ID: ${m.materialId}`,
+      m.tipo === 'ingreso' ? 'Ingreso' : 'Salida',
+      m.cantidad,
+      m.proveedor || m.destino || '—',
+      m.fecha ? new Date(m.fecha).toLocaleDateString('es-PE') : '—',
+      m.usuario,
+    ]);
+
+    autoTable(doc, {
+      startY: 58,
+      head: [['#', 'Material', 'Tipo', 'Cant.', 'Origen/Destino', 'Fecha', 'Usuario']],
+      body: rows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [21, 101, 192],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 9,
+      },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [240, 245, 255] },
+      styles: { cellPadding: 2 },
+    });
+
+    doc.save(`historial_ckj_${new Date().toISOString().split('T')[0]}.pdf`);
+    this.snackBar.open('✅ PDF exportado correctamente', 'OK', { duration: 2000 });
   }
 }

@@ -4,9 +4,12 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = 3000;
+const JWT_SECRET = 'ckj-almacen-secret-2026';
 const DB_PATH = path.join(__dirname, 'database.sqlite');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
@@ -89,12 +92,30 @@ async function initDatabase() {
     comprobante TEXT DEFAULT '',
     FOREIGN KEY (materialId) REFERENCES materiales(id)
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL, nombre TEXT NOT NULL, rol TEXT NOT NULL DEFAULT 'almacen',
+    activo INTEGER DEFAULT 1
+  )`);
   saveDb();
 
   // Agregar columna comprobante si no existe (para BD ya creadas)
   try { db.run(`ALTER TABLE movimientos ADD COLUMN comprobante TEXT DEFAULT ''`); saveDb(); } catch(e) {}
 
+  if (queryOne('SELECT COUNT(*) as total FROM usuarios').total === 0) seedUsuarios();
   if (queryOne('SELECT COUNT(*) as total FROM materiales').total === 0) seedDatabase();
+}
+
+function seedUsuarios() {
+  console.log('👤 Creando usuarios por defecto...');
+  const users = [
+    ['admin', bcrypt.hashSync('admin123', 10), 'Administrador', 'admin'],
+    ['almacen', bcrypt.hashSync('almacen123', 10), 'Encargado Almacén', 'almacen'],
+    ['ventas', bcrypt.hashSync('ventas123', 10), 'Vendedor', 'ventas'],
+  ];
+  for (const u of users) db.run('INSERT INTO usuarios VALUES (NULL,?,?,?,?,1)', u);
+  saveDb();
+  console.log('✅ Usuarios creados: admin/almacen/ventas');
 }
 
 function seedDatabase() {
@@ -120,6 +141,41 @@ function seedDatabase() {
   console.log('✅ Datos iniciales sembrados correctamente');
 }
 
+// ==================== AUTENTICACIÓN ====================
+
+function authMiddleware(rolesPermitidos = []) {
+  return (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Token requerido' });
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = queryOne('SELECT id, username, nombre, rol FROM usuarios WHERE id=? AND activo=1', [decoded.id]);
+      if (!user) return res.status(401).json({ error: 'Usuario no válido' });
+      if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(user.rol))
+        return res.status(403).json({ error: 'No tienes permisos para esta acción' });
+      req.user = user;
+      next();
+    } catch {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+  };
+}
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+
+  const user = queryOne('SELECT * FROM usuarios WHERE username=? AND activo=1', [username]);
+  if (!user || !bcrypt.compareSync(password, user.password))
+    return res.status(401).json({ error: 'Credenciales inválidas' });
+
+  const token = jwt.sign({ id: user.id, username: user.username, rol: user.rol }, JWT_SECRET, { expiresIn: '12h' });
+  res.json({ token, user: { id: user.id, username: user.username, nombre: user.nombre, rol: user.rol } });
+});
+
+app.get('/api/me', authMiddleware(), (req, res) => res.json(req.user));
+
 // ==================== MATERIALES ====================
 
 app.get('/materiales', (_req, res) => res.json(queryAll('SELECT * FROM materiales ORDER BY id DESC')));
@@ -130,7 +186,7 @@ app.get('/materiales/:id', (req, res) => {
   res.json(m);
 });
 
-app.post('/materiales', (req, res) => {
+app.post('/materiales', authMiddleware(['admin','almacen']), (req, res) => {
   const { nombre, descripcion, categoria, cantidad, unidad, ubicacion, fechaIngreso, proveedor, precioUnitario } = req.body;
   if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio' });
   runSql(`INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?)`, [
@@ -140,7 +196,7 @@ app.post('/materiales', (req, res) => {
   res.status(201).json(queryOne('SELECT * FROM materiales WHERE id = ?', [getLastId()]));
 });
 
-app.put('/materiales/:id', (req, res) => {
+app.put('/materiales/:id', authMiddleware(['admin','almacen']), (req, res) => {
   const existing = queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Material no encontrado' });
   const { nombre, descripcion, categoria, cantidad, unidad, ubicacion, fechaIngreso, proveedor, precioUnitario } = req.body;
@@ -153,14 +209,14 @@ app.put('/materiales/:id', (req, res) => {
   res.json(queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]));
 });
 
-app.patch('/materiales/:id', (req, res) => {
+app.patch('/materiales/:id', authMiddleware(['admin','almacen']), (req, res) => {
   if (!queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]))
     return res.status(404).json({ error: 'Material no encontrado' });
   if (req.body.cantidad !== undefined) runSql('UPDATE materiales SET cantidad=? WHERE id=?', [req.body.cantidad, req.params.id]);
   res.json(queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]));
 });
 
-app.delete('/materiales/:id', (req, res) => {
+app.delete('/materiales/:id', authMiddleware(['admin']), (req, res) => {
   if (!queryOne('SELECT * FROM materiales WHERE id = ?', [req.params.id]))
     return res.status(404).json({ error: 'Material no encontrado' });
   runSql('DELETE FROM movimientos WHERE materialId=?', [req.params.id]);
@@ -184,10 +240,14 @@ app.get('/movimientos/:id', (req, res) => {
   res.json(m);
 });
 
-app.post('/movimientos', upload.single('comprobante'), (req, res) => {
+app.post('/movimientos', authMiddleware(['admin','almacen','ventas']), upload.single('comprobante'), (req, res) => {
   const { materialId, tipo, cantidad, proveedor, destino, usuario } = req.body;
   if (!materialId || !tipo || !cantidad) return res.status(400).json({ error: 'materialId, tipo y cantidad son obligatorios' });
   if (!['ingreso','salida'].includes(tipo)) return res.status(400).json({ error: 'tipo debe ser ingreso o salida' });
+
+  // Ventas solo puede registrar salidas
+  if (req.user.rol === 'ventas' && tipo !== 'salida')
+    return res.status(403).json({ error: 'Ventas solo puede registrar salidas' });
 
   const material = queryOne('SELECT * FROM materiales WHERE id=?', [materialId]);
   if (!material) return res.status(404).json({ error: 'Material no encontrado' });
@@ -199,7 +259,7 @@ app.post('/movimientos', upload.single('comprobante'), (req, res) => {
   runSql('UPDATE materiales SET cantidad=? WHERE id=?', [nuevaCantidad, materialId]);
   runSql(`INSERT INTO movimientos VALUES (NULL,?,?,?,?,?,?,?,?)`, [
     materialId, tipo, Number(cantidad), new Date().toISOString(),
-    tipo === 'ingreso' ? (proveedor||'') : '', tipo === 'salida' ? (destino||'') : '', usuario||'Admin',
+    tipo === 'ingreso' ? (proveedor||'') : '', tipo === 'salida' ? (destino||'') : '', usuario||req.user.nombre,
     comprobante
   ]);
   res.status(201).json(queryOne(`SELECT m.*, mt.nombre as materialNombre FROM movimientos m LEFT JOIN materiales mt ON mt.id=m.materialId WHERE m.id=?`, [getLastId()]));

@@ -20,6 +20,11 @@
           <mat-button-toggle value="mes">Último Mes</mat-button-toggle>
           <mat-button-toggle value="all">Todo</mat-button-toggle>
         </mat-button-toggle-group>
+        <span class="spacer"></span>
+        <button mat-raised-button color="accent" (click)="exportPDF()" [disabled]="dataSource.data.length === 0">
+          <mat-icon>picture_as_pdf</mat-icon>
+          Exportar PDF
+        </button>
       </div>
     </mat-card-content>
   </mat-card>

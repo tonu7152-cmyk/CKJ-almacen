@@ -14,9 +14,12 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MaterialService } from '../../servicios/material';
 import { MovimientoService } from '../../servicios/movimiento';
+import { AuthService } from '../../servicios/auth';
 import { Material } from '../../modelos/material';
 import { MaterialDialogComponent } from './material-dialog';
 import { MovimientoRapidoDialog, MovimientoRapidoData } from './movimiento-rapido-dialog';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-lista-materiales',
@@ -40,7 +43,7 @@ import { MovimientoRapidoDialog, MovimientoRapidoData } from './movimiento-rapid
   styleUrl: './lista-materiales.css',
 })
 export class ListaMateriales implements AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'categoria', 'cantidad', 'unidad', 'ubicacion', 'precioUnitario', 'movimientos', 'acciones'];
+  displayedColumns: string[];
   dataSource = new MatTableDataSource<Material>([]);
   loading = false;
 
@@ -50,10 +53,16 @@ export class ListaMateriales implements AfterViewInit {
   constructor(
     private materialService: MaterialService,
     private movimientoService: MovimientoService,
+    public auth: AuthService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    const cols = ['id', 'nombre', 'categoria', 'cantidad', 'unidad', 'ubicacion', 'precioUnitario'];
+    if (this.auth.hasRole(['admin', 'almacen'])) cols.push('movimientos');
+    cols.push('acciones');
+    this.displayedColumns = cols;
+  }
 
   ngAfterViewInit(): void {
     this.loadMateriales();
@@ -166,5 +175,52 @@ export class ListaMateriales implements AfterViewInit {
     if (cantidad <= 0) return 'warn';
     if (cantidad < 10) return 'accent';
     return 'primary';
+  }
+
+  exportPDF(): void {
+    const data = this.dataSource.filteredData.length > 0 ? this.dataSource.filteredData : this.dataSource.data;
+    if (data.length === 0) {
+      this.snackBar.open('No hay materiales para exportar', 'Cerrar', { duration: 2000 });
+      return;
+    }
+
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    doc.setFontSize(18);
+    doc.setTextColor(21, 101, 192);
+    doc.text('CKJ - Sistema de Almacén', pageWidth / 2, 20, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(60);
+    doc.text('Inventario de Materiales', pageWidth / 2, 28, { align: 'center' });
+
+    const fechaExport = new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' });
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Exportado: ${fechaExport}`, pageWidth - 14, 36, { align: 'right' });
+
+    const rows = data.map((m, i) => [
+      i + 1,
+      m.nombre,
+      m.categoria || '—',
+      m.cantidad,
+      m.unidad,
+      m.ubicacion || '—',
+      `$${(m.precioUnitario || 0).toFixed(2)}`,
+    ]);
+
+    autoTable(doc, {
+      startY: 42,
+      head: [['#', 'Nombre', 'Categoría', 'Cant.', 'Unidad', 'Ubicación', 'Precio']],
+      body: rows,
+      theme: 'grid',
+      headStyles: { fillColor: [21, 101, 192], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [240, 245, 255] },
+      styles: { cellPadding: 2 },
+    });
+
+    doc.save(`inventario_ckj_${new Date().toISOString().split('T')[0]}.pdf`);
+    this.snackBar.open('✅ PDF exportado correctamente', 'OK', { duration: 2000 });
   }
 }
