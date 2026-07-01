@@ -1,0 +1,181 @@
+<div class="ventas-container">
+  <div class="header">
+    <div>
+      <h1>Punto de Venta</h1>
+      <p class="subtitle">Registra ventas y genera boletas para clientes</p>
+    </div>
+  </div>
+
+  <div class="ventas-grid">
+    <mat-card class="productos-card">
+      <mat-card-header>
+        <mat-card-title>Productos</mat-card-title>
+        <mat-card-subtitle>Selecciona los productos para la venta</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cliente</mat-label>
+          <input matInput [formControl]="clienteCtrl" placeholder="Nombre del cliente" />
+          <mat-icon matPrefix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Producto</mat-label>
+          <mat-select [formControl]="productoCtrl">
+            <mat-option [value]="null">Seleccionar...</mat-option>
+            @for (m of materiales; track m.id) {
+              <mat-option [value]="m" [disabled]="m.cantidad &lt;= 0">
+                {{ m.nombre }} &mdash; Stock: {{ m.cantidad }} {{ m.unidad }} &mdash; {{ formatearPrecio(m.precioUnitario) | currency:'USD':'symbol':'1.2-2' }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (productoSeleccionado) {
+          <div class="producto-selected">
+            <div class="selected-info">
+              <strong>{{ productoSeleccionado.nombre }}</strong>
+              <span>Stock: {{ productoSeleccionado.cantidad }} {{ productoSeleccionado.unidad }}</span>
+              <span>Precio: {{ productoSeleccionado.precioUnitario | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="selected-actions">
+              <mat-form-field appearance="outline" class="qty-field">
+                <mat-label>Cant.</mat-label>
+                <input matInput type="number" [formControl]="cantidadCtrl" min="1" [max]="productoSeleccionado.cantidad" />
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="agregarAlCarrito()"
+                [disabled]="!cantidadCtrl.value || cantidadCtrl.value < 1 || cantidadCtrl.value > productoSeleccionado.cantidad">
+                <mat-icon>add_shopping_cart</mat-icon>
+                Agregar
+              </button>
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="carrito-card">
+      <mat-card-header>
+        <mat-card-title>Carrito</mat-card-title>
+        <mat-card-subtitle>{{ carrito.length }} producto(s) agregado(s)</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (carrito.length === 0) {
+          <div class="empty-cart">
+            <mat-icon>shopping_cart</mat-icon>
+            <span>Selecciona productos para agregar al carrito</span>
+          </div>
+        } @else {
+          <div class="carrito-tabla">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Cant.</th>
+                  <th>P.Unit</th>
+                  <th>Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of carrito; track item.material.id; let i = $index) {
+                  <tr>
+                    <td>{{ item.material.nombre }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>{{ item.material.precioUnitario | currency:'USD':'symbol':'1.2-2' }}</td>
+                    <td class="subtotal">{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</td>
+                    <td>
+                      <button mat-icon-button color="warn" (click)="quitarDelCarrito(i)" matTooltip="Quitar">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="carrito-total">
+            <span class="total-label">TOTAL:</span>
+            <span class="total-value">{{ totalVenta | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <button mat-raised-button color="primary" class="full-width btn-pagar"
+            (click)="generarBoleta()" [disabled]="!clienteCtrl.value">
+            <mat-icon>receipt</mat-icon>
+            Generar Boleta &mdash; {{ totalVenta | currency:'USD':'symbol':'1.2-2' }}
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  @if (boletaData) {
+    <div class="boleta-overlay" (click)="cerrarBoleta()">
+      <div class="boleta-preview" (click)="$event.stopPropagation()">
+        <div class="boleta-actions">
+          <button mat-stroked-button (click)="cerrarBoleta()">
+            <mat-icon>close</mat-icon> Cerrar
+          </button>
+          <button mat-raised-button color="primary" (click)="imprimirBoleta()">
+            <mat-icon>print</mat-icon> Imprimir / PDF
+          </button>
+        </div>
+        <div class="boleta" id="boleta-print">
+          <div class="boleta-header">
+            <img src="logo.svg" alt="CKJ" class="boleta-logo" />
+            <h2>CKJ - Sistema de Almacén</h2>
+            <p>RUC: 20600000001</p>
+            <p>Av. Industrial 123 - Lima</p>
+            <p>Tel: (01) 555-0001</p>
+          </div>
+          <div class="boleta-divider"></div>
+          <div class="boleta-body">
+            <div class="boleta-info">
+              <span><strong>BOLETA DE VENTA</strong></span>
+              <span>N&deg; {{ boletaData.numero }}</span>
+              <span>Fecha: {{ boletaData.fecha }}</span>
+              <span>Cliente: <strong>{{ boletaData.cliente }}</strong></span>
+            </div>
+            <div class="boleta-divider"></div>
+            <table class="boleta-tabla">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Producto</th>
+                  <th>Cant</th>
+                  <th>P.Unit</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of carrito; track item.material.id; let i = $index) {
+                  <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ item.material.nombre }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>{{ item.material.precioUnitario | currency:'USD':'symbol':'1.2-2' }}</td>
+                    <td>{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="boleta-divider"></div>
+            <div class="boleta-total">
+              <span>Total:</span>
+              <span class="boleta-monto">{{ totalVenta | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="boleta-total">
+              <span>Son:</span>
+              <span>{{ totalEnLetras }}</span>
+            </div>
+          </div>
+          <div class="boleta-footer">
+            <p>&iexcl;Gracias por su compra!</p>
+            <p class="boleta-legacy">Esta boleta es generada por CKJ - Sistema de Almac&eacute;n</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

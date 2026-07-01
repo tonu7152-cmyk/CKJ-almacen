@@ -12,6 +12,9 @@
       @if (auth.hasRole(['admin','almacen','ventas'])) {
         <a mat-button routerLink="/salida">Salida</a>
       }
+      @if (auth.hasRole(['admin','ventas'])) {
+        <a mat-button routerLink="/ventas">💰 Venta</a>
+      }
       @if (auth.hasRole(['admin'])) {
         <a mat-button routerLink="/reportes">📈 Historial</a>
         <a mat-button routerLink="/usuarios">👤 Usuarios</a>
