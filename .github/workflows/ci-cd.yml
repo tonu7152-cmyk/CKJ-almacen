@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  frontend:
+    name: Frontend - Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Construir aplicación Angular
+        run: npm run build -- --configuration=production
+      - name: Ejecutar tests
+        run: npm test
+
+  backend:
+    name: Backend - Lint & Verify
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Verificar que el servidor arranca
+        run: |
+          timeout 5 node server.js &
+          SERVER_PID=$!
+          sleep 3
+          if kill -0 $SERVER_PID 2>/dev/null; then
+            echo "✅ Servidor backend arrancó correctamente"
+            kill $SERVER_PID
+          else
+            echo "❌ El servidor no pudo arrancar"
+            exit 1
+          fi
