@@ -23,14 +23,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Instalar dependencias
-        run: npm ci
+        run: npm install
       - name: Construir aplicación Angular
         run: npm run build -- --configuration=production
       - name: Ejecutar tests
         run: npm test
 
   backend:
-    name: Backend - Lint & Verify
+    name: Backend - Verify
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,7 +45,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
       - name: Instalar dependencias
-        run: npm ci
+        run: npm install
       - name: Verificar que el servidor arranca
         run: |
           timeout 5 node server.js &
