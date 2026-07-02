@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ChangeDetectorRef } from '@angular/core';
+import { AuthService } from '../../servicios/auth';
 
 @Component({
   selector: 'app-usuarios',
@@ -29,10 +30,12 @@ import { ChangeDetectorRef } from '@angular/core';
           <h1>Gestión de Usuarios</h1>
           <p class="subtitle">Administra los usuarios del sistema</p>
         </div>
-        <button mat-raised-button color="primary" (click)="openDialog()">
-          <mat-icon>person_add</mat-icon>
-          Nuevo Usuario
-        </button>
+        @if (esAdmin) {
+          <button mat-raised-button color="primary" (click)="openDialog()">
+            <mat-icon>person_add</mat-icon>
+            Nuevo Usuario
+          </button>
+        }
       </div>
 
       @if (loading) {
@@ -74,12 +77,16 @@ import { ChangeDetectorRef } from '@angular/core';
               <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef>Acciones</th>
                 <td mat-cell *matCellDef="let u">
-                  <button mat-icon-button color="primary" (click)="editarUsuario(u)" matTooltip="Editar">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="eliminarUsuario(u)" matTooltip="Eliminar">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                  @if (esAdmin) {
+                    <button mat-icon-button color="primary" (click)="editarUsuario(u)" matTooltip="Editar">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="eliminarUsuario(u)" matTooltip="Eliminar">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  } @else {
+                    <span class="sin-permiso">—</span>
+                  }
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="columnas"></tr>
@@ -143,6 +150,7 @@ import { ChangeDetectorRef } from '@angular/core';
     .rol-badge.ventas { background: #e8f5e9; color: #2e7d32; }
     .activo { color: #2e7d32; font-weight: 500; }
     .inactivo { color: #c62828; font-weight: 500; }
+    .sin-permiso { color: #ccc; font-size: 14px; }
     /* Dialog */
     .dialog-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); z-index:1000; display:flex; align-items:center; justify-content:center; }
     .dialog-content { background: #fff; border-radius: 16px; padding: 24px; width: 450px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
@@ -157,12 +165,14 @@ export class UsuariosComponent implements OnInit {
   showDialog = false;
   editando: any = null;
   form: FormGroup;
+  esAdmin = false;
 
   constructor(
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private auth: AuthService
   ) {
     this.form = this.fb.group({
       username: ['', Validators.required],
@@ -173,7 +183,7 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void { this.cargar(); }
+  ngOnInit(): void { this.esAdmin = this.auth.hasRole(['admin']); this.cargar(); }
 
   cargar(): void {
     this.loading = true;
