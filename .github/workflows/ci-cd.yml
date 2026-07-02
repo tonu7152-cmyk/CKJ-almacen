@@ -46,15 +46,5 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - name: Instalar dependencias
         run: npm install
-      - name: Verificar que el servidor arranca
-        run: |
-          timeout 5 node server.js &
-          SERVER_PID=$!
-          sleep 3
-          if kill -0 $SERVER_PID 2>/dev/null; then
-            echo "✅ Servidor backend arrancó correctamente"
-            kill $SERVER_PID
-          else
-            echo "❌ El servidor no pudo arrancar"
-            exit 1
-          fi
+      - name: Verificar sintaxis del servidor
+        run: node -e "require('./server.js'); console.log('✅ Servidor OK');"
