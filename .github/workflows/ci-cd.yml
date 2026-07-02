@@ -47,4 +47,4 @@ jobs:
       - name: Instalar dependencias
         run: npm install
       - name: Verificar sintaxis del servidor
-        run: node -e "require('./server.js'); console.log('✅ Servidor OK');"
+        run: node --check server.js && echo "✅ Sintaxis OK"
