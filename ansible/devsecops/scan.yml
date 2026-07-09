@@ -1,0 +1,172 @@
+---
+# ============================================
+# scan.yml - Escaneo de seguridad para CKJ
+# ============================================
+# Uso:
+#   ansible-playbook devsecops/scan.yml --tags "npm"     # solo npm audit
+#   ansible-playbook devsecops/scan.yml --tags "trivy"   # solo trivy
+#   ansible-playbook devsecops/scan.yml --tags "all"     # todo
+# ============================================
+
+- name: "🔍 Escaneo de seguridad - CKJ Sistema de Almacén"
+  hosts: all
+  become: yes
+  vars:
+    scan_results_dir: /tmp/ckj-scans
+    trivy_version: "0.58.2"
+
+  tasks:
+    - name: "Crear directorio para resultados"
+      file:
+        path: "{{ scan_results_dir }}"
+        state: directory
+        mode: "0755"
+
+    # ── 1. npm audit ──────────────────────────────────
+    - name: "Ejecutar npm audit en el backend"
+      command: npm audit --audit-level=high
+      args:
+        chdir: "{{ backend_dir }}"
+      register: npm_audit_backend
+      ignore_errors: yes
+      changed_when: false
+      tags:
+        - npm
+        - all
+
+    - name: "Mostrar resultado npm audit (backend)"
+      debug:
+        var: npm_audit_backend.stdout_lines
+      tags:
+        - npm
+        - all
+
+    - name: "Guardar resultado npm audit (backend)"
+      copy:
+        content: "{{ npm_audit_backend.stdout }}"
+        dest: "{{ scan_results_dir }}/npm-audit-backend.txt"
+      tags:
+        - npm
+        - all
+
+    - name: "Ejecutar npm audit en el proyecto raíz"
+      command: npm audit --audit-level=high
+      args:
+        chdir: "{{ app_root }}"
+      register: npm_audit_root
+      ignore_errors: yes
+      changed_when: false
+      tags:
+        - npm
+        - all
+
+    - name: "Guardar resultado npm audit (raíz)"
+      copy:
+        content: "{{ npm_audit_root.stdout }}"
+        dest: "{{ scan_results_dir }}/npm-audit-root.txt"
+      tags:
+        - npm
+        - all
+
+    # ── 2. Trivy - escaneo del sistema de archivos ──
+    - name: "Verificar si Trivy está instalado"
+      command: which trivy
+      register: trivy_installed
+      changed_when: false
+      ignore_errors: yes
+      tags:
+        - trivy
+        - all
+
+    - name: "Instalar Trivy"
+      shell: |
+        wget https://github.com/aquasecurity/trivy/releases/download/v{{ trivy_version }}/trivy_{{ trivy_version }}_Linux-64bit.deb
+        dpkg -i trivy_{{ trivy_version }}_Linux-64bit.deb
+        rm trivy_{{ trivy_version }}_Linux-64bit.deb
+      when: trivy_installed.failed
+      tags:
+        - trivy
+        - all
+
+    - name: "Escanear código con Trivy (backend)"
+      command: |
+        trivy filesystem --severity HIGH,CRITICAL \
+          --exit-code 0 \
+          --format table \
+          {{ backend_dir }}
+      register: trivy_backend
+      ignore_errors: yes
+      changed_when: false
+      tags:
+        - trivy
+        - all
+
+    - name: "Mostrar resultado Trivy (backend)"
+      debug:
+        var: trivy_backend.stdout_lines
+      tags:
+        - trivy
+        - all
+
+    - name: "Guardar resultado Trivy"
+      copy:
+        content: "{{ trivy_backend.stdout }}"
+        dest: "{{ scan_results_dir }}/trivy-backend.txt"
+      tags:
+        - trivy
+        - all
+
+    # ── 3. Buscar secretos hardcodeados ──────────────
+    - name: "Buscar posibles secretos en el código (grep)"
+      shell: |
+        grep -rn --include="*.js" --include="*.ts" --include="*.json" \
+          -E "(password|secret|token|api.key|jwt.secret)\s*[=:]\s*['\"][^'\"]+['\"]" \
+          {{ app_root }}/backend/ {{ app_root }}/src/ \
+          | grep -v "node_modules" | grep -v ".spec.ts" || true
+      register: secrets_found
+      changed_when: false
+      tags:
+        - secrets
+        - all
+
+    - name: "Mostrar posibles secretos encontrados"
+      debug:
+        var: secrets_found.stdout_lines
+      when: secrets_found.stdout_lines | length > 0
+      tags:
+        - secrets
+        - all
+
+    - name: "Guardar resultados de búsqueda de secretos"
+      copy:
+        content: "{{ secrets_found.stdout }}"
+        dest: "{{ scan_results_dir }}/hardcoded-secrets.txt"
+      tags:
+        - secrets
+        - all
+
+    # ── 4. Reporte final ────────────────────────────
+    - name: "Generar reporte resumen"
+      copy:
+        content: |
+          ===========================================
+          📋 REPORTE DE SEGURIDAD - CKJ
+          Fecha: {{ ansible_date_time.iso8601 }}
+          Servidor: {{ inventory_hostname }}
+          ===========================================
+
+          ✅ npm audit (backend): {{ 'PASA' if npm_audit_backend.rc == 0 else '⚠️  VULNERABILIDADES' }}
+          ✅ npm audit (raíz):    {{ 'PASA' if npm_audit_root.rc == 0 else '⚠️  VULNERABILIDADES' }}
+          ✅ Trivy:               {{ 'COMPLETADO' if trivy_backend.rc is defined else 'FALLÓ' }}
+          ✅ Secretos:            {{ '⚠️  POSIBLES SECRETOS' if (secrets_found.stdout_lines | length > 0) else 'NINGUNO' }}
+
+          Resultados guardados en: {{ scan_results_dir }}/
+        dest: "{{ scan_results_dir }}/resumen.txt"
+      tags:
+        - all
+
+    - name: "Mostrar resumen"
+      debug:
+        msg: "📋 Reporte guardado en {{ scan_results_dir }}/resumen.txt"
+      tags:
+        - all

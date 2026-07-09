@@ -1,0 +1,54 @@
+---
+# ============================================
+# Status: Ver estado del despliegue
+# ============================================
+# Uso:
+#   ansible-playbook status.yml
+# ============================================
+
+- name: "📊 Ver estado de CKJ en servidor"
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: "Verificar que PM2 tenga la app corriendo"
+      shell: pm2 list
+      become_user: "{{ app_user }}"
+      register: pm2_status
+      changed_when: false
+
+    - name: "Mostrar estado de PM2"
+      debug:
+        var: pm2_status.stdout_lines
+
+    - name: "Verificar que nginx esté activo"
+      systemd:
+        name: nginx
+        state: started
+      check_mode: yes
+      register: nginx_status
+
+    - name: "Mostrar estado de nginx"
+      debug:
+        msg: "nginx: {{ '✅ Activo' if not nginx_status.changed else '❌ No activo' }}"
+
+    - name: "Testear endpoint de la API"
+      uri:
+        url: "http://localhost:{{ backend_port }}/materiales"
+        return_content: yes
+      register: api_test
+      changed_when: false
+      ignore_errors: yes
+
+    - name: "Mostrar estado de la API"
+      debug:
+        msg: "API: {{ '✅ Responde OK' if api_test.status == 200 else '❌ No responde' }}"
+
+    - name: "Verificar espacio en disco"
+      shell: df -h / --output=source,size,used,avail,pcent | tail -1
+      register: disk_space
+      changed_when: false
+
+    - name: "Mostrar espacio en disco"
+      debug:
+        var: disk_space.stdout_lines

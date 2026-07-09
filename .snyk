@@ -1,0 +1,21 @@
+# ============================================
+# .snyk - Políticas de seguridad Snyk
+# ============================================
+# Uso: snyk test --all-projects
+# ============================================
+
+exclude:
+  global:
+    - node_modules/**
+    - dist/**
+    - backend/database.sqlite
+
+patch: {}
+
+# Ignorar vulnerabilidades conocidas y aceptadas
+ignore:
+  # Ejemplo: ignorar una vulnerabilidad específica hasta que se pueda parchear
+  # SNYK-JS-EXAMPLE-123456:
+  #   - '*':
+  #       reason: 'Se parcheará en la próxima versión'
+  #       expires: '2026-12-31T00:00:00.000Z'

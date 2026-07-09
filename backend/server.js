@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
@@ -8,8 +10,11 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const app = express();
-const PORT = 3000;
-const JWT_SECRET = 'ckj-almacen-secret-2026';
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('⚠️  ADVERTENCIA: Usando JWT_SECRET por defecto. Configura JWT_SECRET como variable de entorno en producción.');
+  return 'ckj-almacen-secret-2026';
+})();
 const DB_PATH = path.join(__dirname, 'database.sqlite');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
@@ -36,8 +41,20 @@ const upload = multer({
   }
 });
 
+app.use(helmet());
 app.use(cors());
-app.use(express.json());
+
+// ── Rate limiting global ──
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // límite por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes. Intenta de nuevo en 15 minutos.' }
+});
+app.use('/api/', limiter);
+
+app.use(express.json({ limit: '1mb' })); // Límite de tamaño para evitar DoS
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 let db;
@@ -166,9 +183,20 @@ function authMiddleware(rolesPermitidos = []) {
   };
 }
 
-app.post('/api/login', (req, res) => {
+// ── Rate limit más estricto para login ──
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // solo 5 intentos por IP cada 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Intenta de nuevo en 15 minutos.' }
+});
+
+app.post('/api/login', loginLimiter, (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+  if (typeof username !== 'string' || typeof password !== 'string')
+    return res.status(400).json({ error: 'Datos inválidos' });
 
   const user = queryOne('SELECT * FROM usuarios WHERE username=? AND activo=1', [username]);
   if (!user || !bcrypt.compareSync(password, user.password))

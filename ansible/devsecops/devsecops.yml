@@ -1,0 +1,28 @@
+---
+# ============================================
+# devsecops.yml - Pipeline completo DevSecOps
+# ============================================
+# Ejecuta hardening + escaneos + reportes
+# ============================================
+# Uso:
+#   ansible-playbook devsecops/devsecops.yml
+# ============================================
+
+- name: "🔒 Aplicar hardening de seguridad"
+  hosts: all
+  become: yes
+  roles:
+    - role: security
+  tags:
+    - harden
+
+- name: "🔍 Ejecutar escaneos de seguridad"
+  hosts: all
+  become: yes
+  tags:
+    - scan
+  tasks:
+    - name: "Incluir playbook de escaneo"
+      ansible.builtin.include_tasks: scan.yml
+      vars:
+        scan_results_dir: /var/log/ckj/scans

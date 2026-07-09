@@ -1,0 +1,41 @@
+# ============================================
+# .gitleaks.toml - Prevenir commits con secretos
+# ============================================
+# Uso: gitleaks detect --source . --config .gitleaks.toml
+# ============================================
+
+title = "CKJ - Gitleaks Config"
+
+[allowlist]
+  description = "Archivos y rutas permitidas"
+  paths = [
+    ".git/",
+    "node_modules/",
+    "backend/database.sqlite",
+    "backend/uploads/",
+    "dist/",
+  ]
+
+[[rules]]
+  id = "ckj-jwt-secret"
+  description = "JWT Secret en backend/server.js"
+  regex = '''(['\"])ckj-almacen-secret-2026(['\"])'''
+  tags = ["ckj", "jwt"]
+
+[[rules]]
+  id = "generic-api-key"
+  description = "Posible API Key o Token"
+  regex = '''(?i)(?:api[_-]?key|secret|token|password|jwt[_-]?secret)\s*[=:]\s*['\"](?!\s*['\"]).{8,}['\"]'''
+  tags = ["credentials", "secret"]
+
+[[rules]]
+  id = "private-key"
+  description = "Llave privada RSA/EC"
+  regex = '''-----BEGIN\s?(RSA|EC|DSA|OPENSSH|PRIVATE)\s?KEY-----'''
+  tags = ["crypto", "private-key"]
+
+[[rules]]
+  id = "connection-string"
+  description = "String de conexión con credenciales"
+  regex = '''(mongodb|postgresql|mysql|sqlite)://[^\s]{3,50}:[^\s]{3,50}@'''
+  tags = ["database", "credentials"]

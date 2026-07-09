@@ -1,0 +1,65 @@
+---
+# ============================================
+# Playbook: Desplegar CKJ - Sistema de Almacén
+# ============================================
+# Uso:
+#   ansible-playbook deploy.yml -i inventory.yml
+#   ansible-playbook deploy.yml -l staging
+#   ansible-playbook deploy.yml --tags "app"    # solo actualizar app
+# ============================================
+
+- name: "🛠  Preparar servidor - Node.js + herramientas"
+  hosts: all
+  become: yes
+  roles:
+    - role: common
+  tags:
+    - common
+    - setup
+
+- name: "📦 Desplegar aplicación CKJ"
+  hosts: all
+  become: yes
+  roles:
+    - role: app
+  tags:
+    - app
+    - deploy
+
+- name: "🌐 Configurar nginx como reverse proxy"
+  hosts: all
+  become: yes
+  roles:
+    - role: nginx
+  tags:
+    - nginx
+    - web
+
+- name: "🔒 Hardening de seguridad del servidor"
+  hosts: all
+  become: yes
+  roles:
+    - role: security
+  tags:
+    - security
+    - hardening
+
+- name: "🔍 Escaneo de seguridad post-deploy"
+  hosts: all
+  become: yes
+  tags:
+    - scan
+    - devsecops
+  tasks:
+    - name: "Ejecutar npm audit"
+      command: npm audit --audit-level=high
+      args:
+        chdir: "{{ backend_dir }}"
+      register: audit_result
+      ignore_errors: yes
+      changed_when: false
+
+    - name: "Mostrar resultado npm audit"
+      debug:
+        var: audit_result.stdout_lines
+      when: audit_result.rc != 0

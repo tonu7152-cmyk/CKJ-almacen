@@ -1,0 +1,44 @@
+---
+# ============================================
+# Rollback: Volver a una versión anterior
+# ============================================
+# Uso:
+#   ansible-playbook rollback.yml -e "git_ref=v1.0.0"
+# ============================================
+
+- name: "⏪ Rollback de CKJ a versión anterior"
+  hosts: all
+  become: yes
+  vars:
+    git_ref: "{{ git_ref | default('HEAD~1') }}"
+
+  tasks:
+    - name: "Hacer checkout a la versión {{ git_ref }}"
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_root }}"
+        version: "{{ git_ref }}"
+        force: yes
+      become_user: "{{ app_user }}"
+
+    - name: "Reinstalar dependencias"
+      npm:
+        path: "{{ app_root }}"
+        state: present
+      become_user: "{{ app_user }}"
+
+    - name: "Reinstalar dependencias del backend"
+      npm:
+        path: "{{ backend_dir }}"
+        state: present
+      become_user: "{{ app_user }}"
+
+    - name: "Recompilar Angular"
+      command: npm run build -- --configuration production
+      args:
+        chdir: "{{ app_root }}"
+      become_user: "{{ app_user }}"
+
+    - name: "Reiniciar API con PM2"
+      shell: pm2 restart ckj-api
+      become_user: "{{ app_user }}"

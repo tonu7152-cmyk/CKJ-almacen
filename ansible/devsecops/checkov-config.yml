@@ -1,0 +1,21 @@
+# ============================================
+# Configuración de Checkov para escanear
+# los playbooks de Ansible
+# ============================================
+# Uso: checkov -d ansible/ --config-file ansible/devsecops/checkov-config.yml
+# ============================================
+
+framework:
+  - ansible
+  - secrets
+
+skip_check:
+  - CKV_GIT_1    # Permitir que el repo no esté firmado
+  - CKV2_ANSIBLE_1 # Permitir tareas sin nombre (opcional)
+
+output:
+  - cli
+  - sarif
+  - html
+
+soft_fail: true

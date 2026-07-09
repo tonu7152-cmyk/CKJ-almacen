@@ -1,0 +1,102 @@
+---
+# ============================================
+# security: Hardening del servidor para CKJ
+# ============================================
+
+- name: "Configurar fail2ban (protección contra fuerza bruta)"
+  apt:
+    name: fail2ban
+    state: present
+
+- name: "Copiar configuración de fail2ban para SSH"
+  template:
+    src: fail2ban-ckj.conf.j2
+    dest: /etc/fail2ban/jail.d/ckj.conf
+    mode: "0644"
+  notify: restart fail2ban
+
+- name: "Configurar UFW - firewall"
+  ufw:
+    rule: "{{ item.rule }}"
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+  with_items:
+    - { rule: 'allow', port: '22', proto: 'tcp' }     # SSH
+    - { rule: 'allow', port: '80', proto: 'tcp' }     # HTTP
+    - { rule: 'allow', port: '443', proto: 'tcp' }    # HTTPS
+    - { rule: 'deny', port: '3000', proto: 'tcp' }    # API no expuesta
+  tags:
+    - firewall
+
+- name: "Habilitar UFW"
+  ufw:
+    state: enabled
+    direction: incoming
+    policy: deny
+  tags:
+    - firewall
+
+- name: "Harden SSH - desactivar root login y password"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
+    - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+    - { regexp: '^MaxAuthTries', line: 'MaxAuthTries 3' }
+  notify: restart ssh
+  tags:
+    - ssh
+
+- name: "Proteger el archivo .env del backend"
+  file:
+    path: "{{ backend_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  tags:
+    - secrets
+
+- name: "Proteger la base de datos SQLite"
+  file:
+    path: "{{ db_path }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  when: db_path is defined
+  tags:
+    - secrets
+
+- name: "Limitar permisos del directorio uploads"
+  file:
+    path: "{{ uploads_dir }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+  tags:
+    - secrets
+
+- name: "Deshabilitar módulos peligrosos de nginx"
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: "{{ item }}"
+    state: absent
+  with_items:
+    - 'server_tokens'
+    - 'server_info'
+  notify: restart nginx
+  tags:
+    - nginx
+
+- name: "Configurar automatic security updates"
+  apt:
+    name: unattended-upgrades
+    state: present
+
+- name: "Habilitar actualizaciones automáticas de seguridad"
+  dpkg:
+    name: unattended-upgrades
+    state: present
+  notify: configure auto upgrades

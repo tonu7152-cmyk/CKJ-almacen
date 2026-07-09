@@ -1,0 +1,30 @@
+---
+# ============================================
+# nginx: Configurar reverse proxy para CKJ
+# ============================================
+
+- name: "Deshabilitar sitio default de nginx"
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- name: "Configurar nginx para CKJ"
+  template:
+    src: ckj.nginx.conf.j2
+    dest: /etc/nginx/sites-available/ckj
+    mode: "0644"
+  notify: restart nginx
+
+- name: "Habilitar sitio CKJ"
+  file:
+    src: /etc/nginx/sites-available/ckj
+    dest: /etc/nginx/sites-enabled/ckj
+    state: link
+  notify: restart nginx
+
+- name: "Asegurar que nginx esté corriendo"
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes

@@ -7,44 +7,93 @@ on:
     branches: [main, master]
 
 jobs:
+  # ============================================
+  # FRONTEND - Angular
+  # ============================================
   frontend:
     name: Frontend - Build & Test
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: .
+
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
           cache-dependency-path: package-lock.json
+
       - name: Instalar dependencias
-        run: npm install
+        run: npm ci
+
       - name: Construir aplicación Angular
         run: npm run build -- --configuration=production
+
       - name: Ejecutar tests
         run: npm test
 
+  # ============================================
+  # BACKEND - Node.js/Express
+  # ============================================
   backend:
-    name: Backend - Verify
+    name: Backend - Lint & Verify
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: backend
+
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
+
       - name: Instalar dependencias
-        run: npm install
+        run: npm ci
+
       - name: Verificar sintaxis del servidor
         run: node --check server.js && echo "✅ Sintaxis OK"
+
+  # ============================================
+  # DEVSECOPS - Escaneo de seguridad
+  # ============================================
+  devsecops:
+    name: 🔒 DevSecOps - Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: npm audit (backend)
+        run: |
+          cd backend
+          npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: npm audit (frontend)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Buscar secretos hardcodeados
+        run: |
+          grep -rn --include="*.js" --include="*.ts" \
+            -E "(password|secret|token|api.key|jwt.secret)\s*[=:]\s*['\"][^'\"]+['\"]" \
+            backend/ src/ || true

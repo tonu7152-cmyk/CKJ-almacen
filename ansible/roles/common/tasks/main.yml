@@ -1,0 +1,62 @@
+---
+# ============================================
+# common: Preparar servidor base
+# ============================================
+
+- name: "Actualizar apt cache"
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: "Instalar dependencias base"
+  apt:
+    name:
+      - curl
+      - git
+      - build-essential
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+- name: "Agregar repositorio NodeSource para Node.js {{ node_version }}"
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: "Instalar Node.js"
+  apt:
+    name: nodejs
+    state: present
+
+- name: "Instalar PM2 globalmente"
+  npm:
+    name: pm2
+    global: yes
+    state: present
+
+- name: "Configurar PM2 para iniciar con el sistema"
+  shell: pm2 startup systemd -u {{ app_user }} --hp /home/{{ app_user }}
+  when: ansible_service_mgr == "systemd"
+  register: pm2_startup
+  changed_when: pm2_startup.stdout | length > 0
+
+- name: "Crear usuario deploy si no existe"
+  user:
+    name: "{{ app_user }}"
+    state: present
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: "Crear directorio de la aplicación"
+  file:
+    path: "{{ app_root }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"

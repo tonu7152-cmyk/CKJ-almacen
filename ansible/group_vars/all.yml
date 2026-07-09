@@ -1,0 +1,33 @@
+---
+# ============================================
+# Variables globales para CKJ - Sistema de Almacén
+# ============================================
+
+# App
+app_name: ckj
+app_user: deploy
+app_group: deploy
+app_root: /var/www/{{ app_name }}
+repo_url: https://github.com/tu-usuario/ckj.git   # ← CAMBIAR
+repo_branch: main
+
+# Node.js
+node_version: "22.x"
+npm_version: latest
+
+# Backend
+backend_port: 3000
+backend_dir: "{{ app_root }}/backend"
+db_path: "{{ backend_dir }}/database.sqlite"
+uploads_dir: "{{ backend_dir }}/uploads"
+
+# Frontend (Angular)
+frontend_dir: "{{ app_root }}/dist/ckj/browser"
+
+# JWT
+jwt_secret: "ckj-almacen-secret-2026"    # Cambiar en producción
+
+# Nginx
+nginx_server_name: ckj.local              # ← CAMBIAR por dominio real
+ssl_cert_path: /etc/letsencrypt/live/{{ nginx_server_name }}/fullchain.pem
+ssl_key_path: /etc/letsencrypt/live/{{ nginx_server_name }}/privkey.pem

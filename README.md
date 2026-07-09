@@ -48,6 +48,59 @@ ng test
 
 For end-to-end (e2e) testing, run:
 
+---
+
+## 🔒 DevSecOps - Seguridad integrada
+
+Este proyecto incluye herramientas DevSecOps para mantener la seguridad en cada etapa.
+
+### 📋 Herramientas incluidas
+
+| Herramienta | Archivo | Propósito |
+|---|---|---|
+| **Helmet** | `backend/server.js` | Cabeceras HTTP seguras (XSS, clickjacking, etc.) |
+| **Rate Limiting** | `backend/server.js` | Límite de 100 req/15min global, 5 intentos/login |
+| **npm audit** | `ansible/devsecops/scan.yml` | Escaneo de dependencias vulnerables |
+| **Trivy** | `ansible/devsecops/scan.yml` | Escaneo de archivos (HIGH/CRITICAL) |
+| **Secret Scanner** | `.gitleaks.toml` | Evita commits con contraseñas/tokens |
+| **Checkov** | `ansible/devsecops/checkov-config.yml` | Escanea playbooks de Ansible |
+| **SonarQube** | `sonar-project.properties` | Calidad de código y seguridad |
+| **Snyk** | `.snyk` | Monitoreo continuo de vulnerabilidades |
+| **Fail2Ban** | `ansible/roles/security/` | Bloquea IPs por fuerza bruta SSH |
+| **UFW** | `ansible/roles/security/` | Firewall (solo 22, 80, 443 abiertos) |
+| **Hardening SSH** | `ansible/roles/security/` | Sin root, sin passwords, 3 intentos máx |
+
+### 🚀 Comandos DevSecOps
+
+```bash
+# Escaneo rápido de seguridad en el servidor
+ansible-playbook ansible/devsecops/scan.yml
+
+# Hardening completo del servidor
+ansible-playbook ansible/deploy.yml --tags "security"
+
+# Pipeline DevSecOps completo
+ansible-playbook ansible/devsecops/devsecops.yml
+
+# Escanear secretos en commits (local)
+gitleaks detect --source . --config .gitleaks.toml
+
+# Analizar código con SonarQube
+sonar-scanner
+
+# Escanear dependencias
+cd backend && npm audit --audit-level=high
+```
+
+### 🔐 Mejoras en el backend
+
+- **JWT_SECRET** ahora se lee de variable de entorno (`process.env.JWT_SECRET`)
+- **Helmet** protege contra XSS, clickjacking, MIME sniffing, etc.
+- **Rate limiting** por IP para evitar ataques de fuerza bruta
+- **Validación de tipos** en inputs del login
+- **Límite de tamaño** de body (1MB) para evitar DoS
+- En producción, configurar: `JWT_SECRET=clave_segura_aqui`
+
 ```bash
 ng e2e
 ```

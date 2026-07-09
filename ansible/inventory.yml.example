@@ -1,0 +1,22 @@
+# ============================================
+# Inventario de ejemplo para CKJ
+# Copia este archivo como inventory.yml y edita las IPs
+# ============================================
+# NUNCA subas inventory.yml con IPs reales al repositorio
+# ============================================
+
+all:
+  children:
+    production:
+      hosts:
+        ckj-server:
+          ansible_host: 192.168.1.100   # ← CAMBIAR por IP real
+          ansible_user: deploy
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+
+    staging:
+      hosts:
+        ckj-staging:
+          ansible_host: 192.168.1.101   # ← CAMBIAR por IP real
+          ansible_user: deploy

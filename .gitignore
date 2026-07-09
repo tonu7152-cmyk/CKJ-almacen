@@ -38,6 +38,18 @@ ng
 !.vscode/mcp.json
 .history/*
 
+# Uploads y archivos subidos
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Environment variables
+.env
+backend/.env
+
+# Ansible - no subir inventarios con IPs reales
+ansible/inventory.yml
+!ansible/inventory.yml.example
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

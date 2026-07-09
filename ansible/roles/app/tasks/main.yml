@@ -1,0 +1,81 @@
+---
+# ============================================
+# app: Clonar, compilar y configurar CKJ
+# ============================================
+
+- name: "Clonar repositorio (o actualizar si ya existe)"
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ app_root }}"
+    version: "{{ repo_branch }}"
+    force: yes
+  become_user: "{{ app_user }}"
+  register: repo_cloned
+  tags:
+    - code
+
+- name: "Crear directorio uploads"
+  file:
+    path: "{{ uploads_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+
+- name: "Instalar dependencias del proyecto raíz (Angular)"
+  npm:
+    path: "{{ app_root }}"
+    state: present
+  become_user: "{{ app_user }}"
+  tags:
+    - deps
+
+- name: "Instalar dependencias del backend"
+  npm:
+    path: "{{ backend_dir }}"
+    state: present
+  become_user: "{{ app_user }}"
+  tags:
+    - deps
+
+- name: "Crear archivo .env del backend desde template"
+  template:
+    src: backend.env.j2
+    dest: "{{ backend_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0644"
+  tags:
+    - config
+
+- name: "Compilar frontend Angular (producción)"
+  command: npm run build -- --configuration production
+  args:
+    chdir: "{{ app_root }}"
+  become_user: "{{ app_user }}"
+  when: repo_cloned.changed or force_build is defined
+  tags:
+    - build
+
+- name: "Detener instancia previa de CKJ en PM2"
+  shell: pm2 delete ckj-api 2>/dev/null || true
+  become_user: "{{ app_user }}"
+  ignore_errors: yes
+
+- name: "Iniciar backend con PM2"
+  shell: |
+    pm2 start {{ backend_dir }}/server.js \
+      --name ckj-api \
+      --watch \
+      --ignore-watch="*.sqlite" \
+      --max-memory-restart 300M \
+      --env production
+  become_user: "{{ app_user }}"
+  tags:
+    - start
+
+- name: "Guardar configuración de PM2"
+  shell: pm2 save
+  become_user: "{{ app_user }}"
+  tags:
+    - start
