@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentacion - CKJ Sistema de Almacen</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#1a1a2e;overflow:hidden}
+.slide{display:none;width:100vw;height:100vh;padding:50px 70px;position:relative;overflow-y:auto}
+.slide.active{display:flex;flex-direction:column;justify-content:flex-start;padding-top:50px}
+.slide{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff}
+.slide.white{background:#fff;color:#333}
+.slide.green{background:linear-gradient(135deg,#1b5e20,#2e7d32,#388e3c);color:#fff}
+.slide.blue{background:linear-gradient(135deg,#0d47a1,#1976d2,#1565c0);color:#fff}
+.slide.orange{background:linear-gradient(135deg,#e65100,#ef6c00,#f57c00);color:#fff}
+.slide.purple{background:linear-gradient(135deg,#4a148c,#7b1fa2,#8e24aa);color:#fff}
+h1{font-size:2.8em;font-weight:800;margin-bottom:10px;line-height:1.1}
+h2{font-size:1.8em;font-weight:700;margin-bottom:15px}
+h3{font-size:1.2em;font-weight:600;margin-bottom:8px;color:#90caf9}
+.white h3{color:#1976d2}
+p{font-size:1em;line-height:1.5;margin-bottom:8px;opacity:.9}
+.white p{opacity:1}
+.nav{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:1000;align-items:center;background:rgba(0,0,0,.6);padding:8px 18px;border-radius:50px;backdrop-filter:blur(10px)}
+.nav button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 16px;border-radius:25px;cursor:pointer;font-size:13px;font-weight:600;transition:.3s}
+.nav button:hover{background:rgba(255,255,255,.3)}
+.nav .counter{color:rgba(255,255,255,.7);font-size:12px;padding:0 8px}
+pre{background:rgba(0,0,0,.4);padding:12px 16px;border-radius:8px;overflow-x:auto;font-family:'Consolas',monospace;font-size:.78em;line-height:1.5;border-left:3px solid #4caf50;max-width:95%;margin:5px 0}
+.white pre{background:#1e1e2e;color:#cdd6f4}
+code{background:rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:.88em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:10px 0}
+.card{background:rgba(255,255,255,.08);border-radius:10px;padding:14px;backdrop-filter:blur(5px);border:1px solid rgba(255,255,255,.1)}
+.white .card{background:#f5f5f5;border:1px solid #e0e0e0}
+.card .icon{font-size:1.6em;margin-bottom:5px}
+.card h4{font-size:.95em;margin-bottom:4px;color:#80cbc4}
+.card p{font-size:.8em;opacity:.7}
+.columns{display:flex;gap:20px;margin:10px 0}
+.columns > div{flex:1}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.75em;font-weight:600;margin:1px}
+.slide-num{position:absolute;top:15px;right:25px;font-size:.8em;opacity:.4}
+.logo{position:absolute;top:15px;left:25px;font-weight:700;font-size:.8em;opacity:.5}
+.mini-grid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.mini-grid span{background:rgba(255,255,255,.06);padding:4px 10px;border-radius:6px;font-size:.78em}
+.white .mini-grid span{background:#f5f5f5;border:1px solid #e0e0e0}
+.big-icon{font-size:4em;margin-bottom:15px}
+.tech-badge{display:inline-block;padding:6px 14px;border-radius:6px;margin:3px;font-size:.82em;font-weight:600}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.85em;background:rgba(0,0,0,.2);border-radius:6px}
+.white table{background:#fff}
+th,td{padding:5px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1)}
+th{background:rgba(255,255,255,.1);font-weight:600}
+@media(max-width:768px){.slide{padding:20px 15px}.grid{grid-template-columns:1fr 1fr}.columns{flex-direction:column}h1{font-size:1.8em}h2{font-size:1.3em}pre{font-size:.65em}}
+</style>
+</head>
+<body>
+
+<div class="slide active" id="s1">
+<div class="logo">CKJ</div><div class="slide-num">1/18</div>
+<div style="text-align:center;margin-top:5%">
+<div class="big-icon">📦</div>
+<h1>CKJ - Sistema de Almacen</h1>
+<p style="font-size:1.3em;margin-bottom:20px;opacity:.8">Proyecto de Gestion de Inventarios</p>
+<div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:25px;max-width:700px;margin-left:auto;margin-right:auto">
+<span class="tech-badge" style="background:#fce4ec;color:#c62828">Angular 22</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">Node.js 22</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">Express 4.21</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">SQLite / sql.js</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">Angular Material</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Ansible</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">Helmet</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">rate-limit</span>
+<span class="tech-badge" style="background:#fce4ec;color:#c62828">JWT</span>
+<span class="tech-badge" style="background:#fce4ec;color:#c62828">bcryptjs</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">PM2</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">Multer</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">jsPDF</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">GitHub Actions</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Husky</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Prettier</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">Gitleaks</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">Trivy</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">SonarQube</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">Snyk</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">Checkov</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">UFW</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">Fail2Ban</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Docker</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Vitest</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">lint-staged</span>
+</div>
+<p style="opacity:.5">Alumno: ___________________________ | Fecha: Julio 2026</p>
+</div></div>
+
+<div class="slide blue" id="s2">
+<div class="logo">CKJ</div><div class="slide-num">2/18</div>
+<h2>1️⃣ Stack Tecnologico Completo</h2>
+<div class="grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="card"><div class="icon">🖥️</div><h4>Frontend</h4><p>Angular 22, Angular Material, RxJS, TypeScript 6, Vitest, jsPDF</p></div>
+<div class="card"><div class="icon">🔧</div><h4>Backend</h4><p>Node.js 22, Express 4.21, JWT, bcryptjs, Helmet, rate-limit, Multer, CORS, SQLite, sql.js</p></div>
+<div class="card"><div class="icon">🚀</div><h4>DevOps</h4><p>Ansible, PM2, Nginx, Docker, GitHub Actions, Let's Encrypt, UFW, Fail2Ban</p></div>
+<div class="card"><div class="icon">🐶</div><h4>Pre-commit</h4><p>Husky 9, lint-staged, Prettier, Gitleaks</p></div>
+<div class="card"><div class="icon">🔒</div><h4>DevSecOps</h4><p>Trivy, SonarQube, Snyk, Checkov, npm audit, Helmet, Rate Limiting</p></div>
+<div class="card"><div class="icon">📄</div><h4>Documentacion</h4><p>Manual Usuario (HTML/Word), Manual Desarrollador, Presentacion, Diagramas</p></div>
+</div>
+<div class="mini-grid" style="margin-top:5px">
+<span>✅ 25+ tecnologias integradas</span>
+<span>✅ 3 manuales de usuario</span>
+<span>✅ Pipeline CI/CD automatico</span>
+<span>✅ Seguridad en multiples capas</span>
+</div></div>
+
+<div class="slide white" id="s3">
+<div class="logo" style="color:#999">CKJ</div><div class="slide-num" style="color:#999">3/18</div>
+<h2>🏗️ Arquitectura Cliente-Servidor</h2>
+<div class="columns">
+<div><h3 style="color:#333">Componentes</h3><pre style="font-size:.72em;border-left-color:#1976d2">
+CLIENTE (Angular :4200)
+  │  AuthInterceptor: adjunta JWT
+  │  AuthGuard: protege rutas por rol
+  │  HttpClient → API REST
+  ▼
+SERVIDOR (Express :3000)
+  │  Helmet → CORS → Rate Limit
+  │  authMiddleware(roles)
+  │  Rutas: /materiales, /movimientos
+  │         /api/login, /api/usuarios
+  ▼
+SQLite (database.sqlite)
+  Tablas: materiales, movimientos, usuarios</pre></div>
+<div><h3 style="color:#333">Flujo de Autenticacion</h3><pre style="font-size:.72em;border-left-color:#e65100">
+Login → POST /api/login
+  → bcrypt.compare(password, hash)
+  → jwt.sign({id, rol})
+  → {token, user}
+
+Cada request:
+  → AuthInterceptor agrega header
+  → Authorization: Bearer &lt;token&gt;
+  → authMiddleware.verify(token)
+  → Si valido → next()
+  → Si invalido → 401
+
+Token expira en 12h</pre></div></div>
+<div class="mini-grid">
+<span>🔐 JWT en localStorage (ckj_token)</span>
+<span>🛡️ 3 roles: admin, almacen, ventas</span>
+<span>⏱️ Rate limit: 100 req/15min + 5 login/15min</span>
+</div></div>
+
+<div class="slide purple" id="s4">
+<div class="logo">CKJ</div><div class="slide-num">4/18</div>
+<h2>📦 Dependencias del Proyecto</h2>
+<div class="columns">
+<div><h3>Frontend (package.json)</h3><pre style="font-size:.7em">
+<span style="color:#6c7086">// Dependencias de produccion</span>
+@angular/core, @angular/router
+@angular/forms, @angular/material
+@angular/cdk, @angular/common
+@angular/platform-browser
+rxjs, tslib, zone.js
+jspdf, jspdf-autotable
+
+<span style="color:#6c7086">// DevDependencies</span>
+@angular/cli, @angular/build
+@angular/compiler-cli, typescript
+husky ^9.1.7
+lint-staged ^17.0.8
+prettier ^3.9.5
+vitest ^4.0.8
+jsdom ^28.0.0</pre></div>
+<div><h3>Backend (package.json)</h3><pre style="font-size:.7em">
+<span style="color:#6c7086">// Dependencias de produccion</span>
+express       ^4.21.0   <span style="color:#6c7086">// Framework web</span>
+cors          ^2.8.5    <span style="color:#6c7086">// CORS headers</span>
+helmet        ^8.2.0    <span style="color:#6c7086">// Seguridad HTTP</span>
+express-rate-limit ^7.5.1 <span style="color:#6c7086">// Rate limiting</span>
+jsonwebtoken  ^9.0.3    <span style="color:#6c7086">// JWT tokens</span>
+bcryptjs      ^3.0.3    <span style="color:#6c7086">// Hash passwords</span>
+sql.js        ^1.11.0   <span style="color:#6c7086">// SQLite</span>
+multer        ^2.2.0    <span style="color:#6c7086">// File uploads</span>
+
+<span style="color:#6c7086">// Frontend tambien incluye:</span>
+json-server   ^1.0.0    <span style="color:#6c7086">// BD adicional</span>
+jspdf         ^4.2.1    <span style="color:#6c7086">// PDF generation</span>
+jspdf-autotable ^5.0.8  <span style="color:#6c7086">// Tablas en PDF</span></pre></div></div>
+<div class="mini-grid"><span>📦 Total: ~30 dependencias gestionadas con npm</span></div></div>
+
+<div class="slide white" id="s5">
+<div class="logo" style="color:#999">CKJ</div><div class="slide-num" style="color:#999">5/18</div>
+<h2>⚡ Frontend - 8 Componentes Standalone</h2>
+<table><tr><th>#</th><th>Componente</th><th>Ruta</th><th>Roles</th><th>Lazy Loading</th></tr>
+<tr><td>1</td><td>LoginComponent</td><td>/login</td><td>-</td><td>✅</td></tr>
+<tr><td>2</td><td>DashboardComponent</td><td>/dashboard</td><td>Todos</td><td>✅</td></tr>
+<tr><td>3</td><td>ListaMateriales</td><td>/materiales</td><td>Todos</td><td>✅</td></tr>
+<tr><td>4</td><td>RegistroIngreso</td><td>/ingreso</td><td>Admin/Almacen</td><td>✅</td></tr>
+<tr><td>5</td><td>RegistroSalida</td><td>/salida</td><td>Admin/Almacen/Ventas</td><td>✅</td></tr>
+<tr><td>6</td><td>VentasComponent</td><td>/ventas</td><td>Admin/Ventas</td><td>✅</td></tr>
+<tr><td>7</td><td>Reportes</td><td>/reportes</td><td>Admin</td><td>✅</td></tr>
+<tr><td>8</td><td>UsuariosComponent</td><td>/usuarios</td><td>Admin</td><td>✅</td></tr>
+</table>
+<h3 style="color:#333">Codigo: Proteccion de rutas con AuthGuard</h3>
+<pre style="border-left-color:#1976d2;font-size:.72em">
+<span style="color:#cba6f7">export class</span> <span style="color:#89b4fa">AuthGuard</span> <span style="color:#cba6f7">implements</span> CanActivate {
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    <span style="color:#cba6f7">if</span> (!this.auth.isLoggedIn()) {                  <span style="color:#6c7086">// 1. Esta logueado?</span>
+      this.router.navigate([<span style="color:#a6e3a1">'/login'</span>]); <span style="color:#cba6f7">return</span> <span style="color:#fab387">false</span>; }
+    <span style="color:#cba6f7">const</span> roles = route.data[<span style="color:#a6e3a1">'roles'</span>] <span style="color:#cba6f7">as</span> string[];
+    <span style="color:#cba6f7">if</span> (roles && !this.auth.hasRole(roles)) {       <span style="color:#6c7086">// 2. Tiene el rol?</span>
+      this.router.navigate([<span style="color:#a6e3a1">'/dashboard'</span>]); <span style="color:#cba6f7">return</span> <span style="color:#fab387">false</span>; }
+    <span style="color:#cba6f7">return</span> <span style="color:#fab387">true</span>;                                   <span style="color:#6c7086">// 3. Acceso permitido</span>
+  }
+}</pre></div>
+
+<div class="slide" id="s6">
+<div class="logo">CKJ</div><div class="slide-num">6/18</div>
+<h2>🔧 Backend - API REST Completa</h2>
+<table><tr><th>Metodo</th><th>Endpoint</th><th>Auth</th><th>Middleware</th></tr>
+<tr><td>POST</td><td>/api/login</td><td>-</td><td>loginLimiter (5 req/15min)</td></tr>
+<tr><td>GET</td><td>/api/me</td><td>JWT</td><td>authMiddleware()</td></tr>
+<tr><td colspan="4" style="text-align:center;background:rgba(255,255,255,.05)"><strong>Materiales</strong></td></tr>
+<tr><td>GET</td><td>/materiales</td><td>-</td><td>-</td></tr>
+<tr><td>POST/PUT</td><td>/materiales[/:id]</td><td>Admin/Almacen</td><td>authMiddleware</td></tr>
+<tr><td>DELETE</td><td>/materiales/:id</td><td>Admin</td><td>authMiddleware</td></tr>
+<tr><td>POST</td><td>/materiales/:id/ajustar</td><td>Admin</td><td>authMiddleware</td></tr>
+<tr><td colspan="4" style="text-align:center;background:rgba(255,255,255,.05)"><strong>Movimientos</strong></td></tr>
+<tr><td>GET</td><td>/movimientos[/:id]</td><td>-</td><td>Filtro: ?materialId=</td></tr>
+<tr><td>POST</td><td>/movimientos</td><td>Admin/Almacen/Ventas</td><td>Multer (file upload)</td></tr>
+<tr><td>GET</td><td>/movimientos/resumen/historial</td><td>-</td><td>Filtro: ?periodo=semana|mes|all</td></tr>
+<tr><td colspan="4" style="text-align:center;background:rgba(255,255,255,.05)"><strong>Usuarios</strong></td></tr>
+<tr><td>GET/POST/PUT/DELETE</td><td>/api/usuarios[/:id]</td><td>Admin</td><td>authMiddleware(['admin'])</td></tr>
+<tr><td colspan="4" style="text-align:center;background:rgba(255,255,255,.05)"><strong>Dashboard</strong></td></tr>
+<tr><td>GET</td><td>/dashboard</td><td>-</td><td>Metricas agregadas</td></tr>
+</table>
+<p style="margin-top:3px;font-size:.85em;opacity:.6">Total: 16 endpoints REST | Backend en 1 archivo: server.js (~400 lineas) | BD: SQLite con sql.js</p></div>
+
+<div class="slide green" id="s7">
+<div class="logo">CKJ</div><div class="slide-num">7/18</div>
+<h2>🗄️ Base de Datos SQLite - Esquema Completo</h2>
+<div class="columns">
+<div><h3>Tabla: materiales</h3><pre style="font-size:.68em;border-left-color:#4caf50">
+CREATE TABLE materiales (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  descripcion TEXT DEFAULT '',
+  categoria TEXT DEFAULT '',
+  cantidad REAL NOT NULL DEFAULT 0,
+  unidad TEXT DEFAULT 'unidades',
+  ubicacion TEXT DEFAULT '',
+  fechaIngreso TEXT DEFAULT (date('now')),
+  proveedor TEXT DEFAULT '',
+  precioUnitario REAL DEFAULT 0,
+  stockMinimo REAL DEFAULT 10
+);</pre></div>
+<div><h3>Tabla: movimientos</h3><pre style="font-size:.68em;border-left-color:#ff9800">
+CREATE TABLE movimientos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  materialId INTEGER NOT NULL,
+  tipo TEXT NOT NULL CHECK(tipo IN ('ingreso','salida')),
+  cantidad REAL NOT NULL,
+  fecha TEXT DEFAULT (datetime('now','localtime')),
+  proveedor TEXT DEFAULT '',
+  destino TEXT DEFAULT '',
+  usuario TEXT DEFAULT 'Admin',
+  comprobante TEXT DEFAULT '',
+  FOREIGN KEY (materialId) REFERENCES materiales(id)
+);</pre></div></div>
+<div style="margin-top:5px"><h3>Tabla: usuarios</h3><pre style="font-size:.68em;border-left-color:#e65100;max-width:60%">
+CREATE TABLE usuarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,     <span style="color:#6c7086">-- almacenado con bcrypt (10 rondas)</span>
+  nombre TEXT NOT NULL,
+  rol TEXT NOT NULL DEFAULT 'almacen',  <span style="color:#6c7086">-- 'admin' | 'almacen' | 'ventas'</span>
+  activo INTEGER DEFAULT 1
+);</pre></div></div>
+
+<div class="slide white" id="s8">
+<div class="logo" style="color:#999">CKJ</div><div class="slide-num" style="color:#999">8/18</div>
+<h2>📋 CRUD de Materiales - Codigo Clave</h2>
+<h3 style="color:#333">Los 7 endpoints del inventario</h3>
+<pre style="font-size:.7em;border-left-color:#2e7d32">
+<span style="color:#6c7086">// GET - Listar todos (publico)</span>
+app.get(<span style="color:#a6e3a1">'/materiales'</span>, (req, res) =>
+  res.json(queryAll(<span style="color:#a6e3a1">'SELECT * FROM materiales ORDER BY id DESC'</span>)));
+
+<span style="color:#6c7086">// POST - Crear (solo admin/almacen)</span>
+app.post(<span style="color:#a6e3a1">'/materiales'</span>, authMiddleware([<span style="color:#a6e3a1">'admin'</span>,<span style="color:#a6e3a1">'almacen'</span>]), (req, res) => {
+  <span style="color:#cba6f7">const</span> { nombre, descripcion, categoria, cantidad, unidad,
+            ubicacion, proveedor, precioUnitario, stockMinimo } = req.body;
+  runSql(<span style="color:#a6e3a1">'INSERT INTO materiales VALUES (NULL,?,?,?,?,?,?,?,?,?,?)'</span>,
+    [nombre, descripcion||'', categoria||'', cantidad||0, unidad||'unidades',
+     ubicacion||'', new Date().toISOString().split('T')[0],
+     proveedor||'', precioUnitario||0, stockMinimo ?? <span style="color:#fab387">10</span>]);
+  res.status(<span style="color:#fab387">201</span>).json(queryOne(<span style="color:#a6e3a1">'SELECT * FROM materiales WHERE id=?'</span>, [getLastId()]));
+});
+
+<span style="color:#6c7086">// POST - Ajustar stock (solo admin, crea movimiento automatico)</span>
+app.post(<span style="color:#a6e3a1">'/materiales/:id/ajustar'</span>, authMiddleware([<span style="color:#a6e3a1">'admin'</span>]), (req, res) => {
+  <span style="color:#6c7086">// Actualiza cantidad y registra movimiento con motivo</span>
+  runSql(<span style="color:#a6e3a1">'UPDATE materiales SET cantidad=? WHERE id=?'</span>, [cantidad, req.params.id]);
+});</pre>
+<div class="mini-grid"><span>🔒 Queries parametrizadas: previenen SQL Injection</span><span>🔑 authMiddleware: control de acceso por rol</span></div></div>
+
+<div class="slide" id="s9">
+<div class="logo">CKJ</div><div class="slide-num">9/18</div>
+<h2>🔐 Seguridad en 3 Capas</h2>
+<div class="grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="card"><div class="icon">🛡️</div><h4>Capa 1: Backend</h4><p>Helmet (headers HTTP seguros)<br>express-rate-limit (100 req/15min)<br>Login: 5 intentos/15min<br>express.json({limit:'1mb'}) anti-DoS</p></div>
+<div class="card"><div class="icon">🔑</div><h4>Capa 2: Autenticacion</h4><p>JWT con expiracion 12h<br>bcryptjs 10 rondas de salt<br>authMiddleware por rol<br>JWT_SECRET desde variable de entorno</p></div>
+<div class="card"><div class="icon">🔍</div><h4>Capa 3: DevSecOps</h4><p>npm audit en CI/CD y pre-commit<br>Gitleaks: detecta secretos en codigo<br>Trivy: escanea vulnerabilidades<br>SonarQube: calidad de codigo</p></div></div>
+<pre style="font-size:.72em;margin-top:5px">
+<span style="color:#6c708c">// 5 lineas = 3 capas de seguridad</span>
+app.use(helmet());                                    <span style="color:#6c708c">// Headers HTTP seguros</span>
+app.use(<span style="color:#a6e3a1">'/api/'</span>, rateLimit({ windowMs: 15*60*1000, max: <span style="color:#fab387">100</span> })); <span style="color:#6c708c">// Rate limit global</span>
+app.use(express.json({ limit: <span style="color:#a6e3a1">'1mb'</span> }));                   <span style="color:#6c708c">// Limite de body</span>
+<span style="color:#cba6f7">const</span> JWT_SECRET = process.env.JWT_SECRET || <span style="color:#a6e3a1">'fallback'</span>; <span style="color:#6c708c">// JWT desde env</span>
+<span style="color:#cba6f7">const</span> loginLimiter = rateLimit({ max: <span style="color:#fab387">5</span> });             <span style="color:#6c708c">// Anti fuerza bruta</span></pre></div>
+
+<div class="slide blue" id="s10">
+<div class="logo">CKJ</div><div class="slide-num">10/18</div>
+<h2>🚀 DevOps - Ansible Playbooks</h2>
+<div class="grid" style="grid-template-columns:repeat(2,1fr)">
+<div class="card"><h4>🛠️ Role: common</h4><p>Instala: Node.js 22.x, npm, PM2, nginx, git, certbot, build-essential</p></div>
+<div class="card"><h4>📦 Role: app</h4><p>Clona repo, npm install (x2), ng build --prod, pm2 start, genera .env</p></div>
+<div class="card"><h4>🌐 Role: nginx</h4><p>Reverse proxy con SSL, sirve archivos estaticos de Angular, redirige API</p></div>
+<div class="card"><h4>🔒 Role: security</h4><p>UFW (solo 22/80/443), Fail2Ban, SSH hardening, permisos 0600 a .env y BD</p></div></div>
+<h3>Comandos de despliegue</h3>
+<pre style="font-size:.72em">
+ansible-playbook deploy.yml                      <span style="color:#6c708c"># Despliegue completo</span>
+ansible-playbook deploy.yml --tags "app"         <span style="color:#6c708c"># Solo actualizar la app</span>
+ansible-playbook rollback.yml -e "git_ref=v1.0"  <span style="color:#6c708c"># Rollback a version anterior</span>
+ansible-playbook status.yml                      <span style="color:#6c708c"># Ver estado del servidor</span>
+ansible-playbook devsecops/scan.yml               <span style="color:#6c708c"># Escaneo de seguridad</span></pre></div>
+
+<div class="slide white" id="s11">
+<div class="logo" style="color:#999">CKJ</div><div class="slide-num" style="color:#999">11/18</div>
+<h2>🌐 Nginx - Configuracion del Reverse Proxy</h2>
+<pre style="font-size:.7em;border-left-color:#1976d2">
+server {
+    listen 443 ssl http2;
+    server_name ckj.local;                    <span style="color:#6c708c"># Cambiar por dominio real</span>
+
+    ssl_certificate     /etc/letsencrypt/live/dominio/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dominio/privkey.pem;
+
+    root /var/www/ckj/dist/ckj/browser;       <span style="color:#6c708c"># Archivos estaticos Angular</span>
+    index index.html;
+
+    <span style="color:#6c708c"># Frontend SPA - todas las rutas a index.html</span>
+    location / { try_files $uri $uri/ /index.html; expires 1y; }
+
+    <span style="color:#6c708c"># API Backend - proxy a Express en puerto 3000</span>
+    location /api/ { proxy_pass http://127.0.0.1:3000; }
+
+    <span style="color:#6c708c"># Endpoints del backend sin prefijo /api/</span>
+    location ~ ^/(materiales|movimientos|dashboard) {
+        proxy_pass http://127.0.0.1:3000;
+    }
+
+    <span style="color:#6c708c"># Archivos subidos (comprobantes)</span>
+    location /uploads/ { alias /var/www/ckj/backend/uploads/; expires 30d; }
+
+    location ~ /\. { deny all; }              <span style="color:#6c708c"># Seguridad: ocultar archivos . (dotfiles)</span>
+}</pre></div>
+
+<div class="slide orange" id="s12">
+<div class="logo">CKJ</div><div class="slide-num">12/18</div>
+<h2>🔒 DevSecOps - Herramientas de Escaneo</h2>
+<table><tr><th>Herramienta</th><th>Que escanea</th><th>Donde se ejecuta</th><th>Config</th></tr>
+<tr><td><strong>npm audit</strong></td><td>Dependencias npm</td><td>CI/CD + Ansible</td><td>--audit-level=high</td></tr>
+<tr><td><strong>Gitleaks</strong></td><td>Secretos en codigo</td><td>Husky pre-commit</td><td>.gitleaks.toml</td></tr>
+<tr><td><strong>Trivy</strong></td><td>Vulnerabilidades en archivos</td><td>Ansible scan.yml</td><td>Severity HIGH,CRITICAL</td></tr>
+<tr><td><strong>SonarQube</strong></td><td>Calidad de codigo</td><td>Manual</td><td>sonar-project.properties</td></tr>
+<tr><td><strong>Checkov</strong></td><td>Playbooks Ansible (IaC)</td><td>Manual</td><td>devsecops/checkov-config.yml</td></tr>
+<tr><td><strong>Snyk</strong></td><td>Vulnerabilidades continuo</td><td>Manual</td><td>.snyk</td></tr>
+</table>
+<h3>Codigo: Gitleaks configuracion</h3>
+<pre style="font-size:.72em;border-left-color:#e65100">
+<span style="color:#6c708c"># .gitleaks.toml - Reglas para detectar secretos</span>
+[[rules]]
+  id = <span style="color:#a6e3a1">"ckj-jwt-secret"</span>
+  regex = <span style="color:#a6e3a1">'''(?i)(?:api[_-]?key|secret|token|password|jwt[_-]?secret)\s*[=:]\s*['"][^'"]+['"]'''</span>
+  tags = [<span style="color:#a6e3a1">"credentials"</span>, <span style="color:#a6e3a1">"secret"</span>]</pre></div>
+
+<div class="slide purple" id="s13">
+<div class="logo">CKJ</div><div class="slide-num">13/18</div>
+<h2>🤖 CI/CD - GitHub Actions</h2>
+<p>Pipeline automatico en cada push a main/master/develop. <strong style="color:#81c784">3 jobs, todos exitosos ✅</strong></p>
+<div class="grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="card" style="text-align:center">
+<div style="font-size:2em;color:#81c784">✅</div><h4>Frontend</h4>
+<p>npm ci → ng build --prod → ng test</p>
+<p style="color:#81c784;font-weight:700">9 segundos</p></div>
+<div class="card" style="text-align:center">
+<div style="font-size:2em;color:#81c784">✅</div><h4>Backend</h4>
+<p>npm ci → node --check server.js</p>
+<p style="color:#81c784;font-weight:700">9 segundos</p></div>
+<div class="card" style="text-align:center">
+<div style="font-size:2em;color:#81c784">✅</div><h4>DevSecOps</h4>
+<p>npm audit (frontend + backend) + grep secretos</p>
+<p style="color:#81c784;font-weight:700">8 segundos</p></div></div>
+<pre style="font-size:.7em;margin-top:3px">
+<span style="color:#6c708c"># .github/workflows/ci-cd.yml - Los 3 jobs</span>
+<span style="color:#f9e2af">jobs</span>:
+  frontend:
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci && npm run build -- --configuration=production && npm test
+
+  backend:
+    steps:
+      - run: cd backend && npm ci && node --check server.js
+
+  devsecops:
+    steps:
+      - run: npm audit --audit-level=high          <span style="color:#6c708c"># Escanea dependencias</span>
+      - run: grep -rn "password\|secret" src/ backend/ || true  <span style="color:#6c708c"># Busca secretos</span></pre></div>
+
+<div class="slide white" id="s14">
+<div class="logo" style="color:#999">CKJ</div><div class="slide-num" style="color:#999">14/18</div>
+<h2>🐶 Husky - Pre-commit Hooks</h2>
+<div class="columns">
+<div><h3 style="color:#333">Hook pre-commit</h3>
+<pre style="border-left-color:#2e7d32;font-size:.75em">
+<span style="color:#6c708c"># .husky/pre-commit</span>
+npx lint-staged
+npx gitleaks detect --source . --no-git --verbose 2>/dev/null || true</pre>
+<h3 style="color:#333;margin-top:10px">lint-staged config</h3>
+<pre style="border-left-color:#1976d2;font-size:.75em">
+<span style="color:#a6e3a1">"lint-staged"</span>: {
+  <span style="color:#a6e3a1">"*.{ts,js,json,md,css,html}"</span>: <span style="color:#a6e3a1">"prettier --write --ignore-unknown"</span>,
+  <span style="color:#a6e3a1">"*.{ts,js}"</span>: <span style="color:#a6e3a1">"eslint --fix --quiet 2>/dev/null || true"</span>
+}</pre></div>
+<div><h3 style="color:#333">Flujo del commit</h3>
+<pre style="border-left-color:#e65100;font-size:.85em">
+git add -A
+git commit -m "mensaje"
+       ↓
+  Paso 1: Prettier formatea codigo
+          (archivos .ts, .js, .json,
+           .md, .css, .html)
+       ↓
+  Paso 2: Gitleaks busca secretos
+          (passwords, API keys, tokens)
+       ↓
+  ✅ Todo OK → commit autorizado
+  ❌ Error → commit rechazado</pre>
+<p style="margin-top:8px;font-size:.85em">⚠️ Para emergencias: <code>git commit --no-verify -m "msg"</code></p>
+<p>📁 Archivos ignorados por Husky: node_modules, dist, *.sqlite, uploads/</p></div></div></div>
+
+<div class="slide green" id="s15">
+<div class="logo">CKJ</div><div class="slide-num">15/18</div>
+<h2>📄 Documentacion Generada</h2>
+<div class="grid" style="grid-template-columns:repeat(2,1fr)">
+<div class="card"><div class="icon">👤</div><h4>Manual de Usuario</h4><p>MANUAL.html + MANUAL.docx<br>Guia completa de la aplicacion<br>Incluye capturas de pantalla</p></div>
+<div class="card"><div class="icon">👑📦💰</div><h4>Manuales por Rol</h4><p>MANUAL-ADMIN.docx<br>MANUAL-ALMACEN.docx<br>MANUAL-VENTAS.docx</p></div>
+<div class="card"><div class="icon">🔧</div><h4>Manual Desarrollador</h4><p>MANUAL-DESARROLLADOR.html<br>14 secciones tecnicas<br>API, BD, DevOps, seguridad</p></div>
+<div class="card"><div class="icon">📊</div><h4>Presentacion</h4><p>PRESENTACION.html<br>18 diapositivas interactivas<br>Navegacion con teclado</p></div></div>
+<div class="mini-grid" style="margin-top:5px">
+<span>📁 Todo en: manual-usuario/</span>
+<span>🖼️ 8 capturas de pantalla</span>
+<span>🔗 Acceso directo: file:///C:/Users/foca/devops/manual-usuario/</span>
+</div></div>
+
+<div class="slide blue" id="s16">
+<div class="logo">CKJ</div><div class="slide-num">16/18</div>
+<h2>📦 Docker - Build Multi-stage</h2>
+<pre style="font-size:.7em">
+<span style="color:#6c708c"># Dockerfile con 3 etapas: build frontend → build backend → final</span>
+<span style="color:#6c708c"># Imagen final: solo lo necesario, usuario no-root</span>
+
+<span style="color:#6c708c"># Etapa 1: Compilar Angular</span>
+FROM node:22-alpine AS build-frontend
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build -- --configuration production
+
+<span style="color:#6c708c"># Etapa 2: Preparar backend</span>
+FROM node:22-alpine AS build-backend
+WORKDIR /app
+COPY backend/package*.json ./backend/
+RUN cd backend && npm ci
+COPY backend/ ./backend/
+
+<span style="color:#6c708c"># Etapa 3: Imagen final (usuario no-root seguridad)</span>
+FROM node:22-alpine
+RUN addgroup -S ckj && adduser -S ckj -G ckj
+COPY --from=build-frontend --chown=ckj:ckj /app/dist ./dist
+COPY --from=build-backend --chown=ckj:ckj /app/backend ./backend
+USER ckj                                  <span style="color:#6c708c"># No ejecutar como root</span>
+CMD ["node", "backend/server.js"]</pre>
+<div class="mini-grid">
+<span>🐳 docker build -t ckj:latest .</span>
+<span>🐳 docker run -p 3000:3000 ckj:latest</span>
+<span>🔒 Usuario no-root por seguridad</span>
+</div></div>
+
+<div class="slide white" id="s17">
+<div class="logo" style="color:#999">CKJ</div><div class="slide-num" style="color:#999">17/18</div>
+<div style="text-align:center">
+<h2>🎬 Demostracion en Vivo</h2>
+<div class="grid" style="grid-template-columns:repeat(3,1fr);max-width:700px;margin:20px auto">
+<div class="card" style="text-align:center;padding:20px">
+<div style="font-size:2.5em">🖥️</div><h4 style="color:#333">1. Frontend</h4>
+<p>localhost:4200<br>Login: admin/admin123<br>Navegar por todas las secciones</p></div>
+<div class="card" style="text-align:center;padding:20px">
+<div style="font-size:2.5em">🔧</div><h4 style="color:#333">2. Backend</h4>
+<p>localhost:3000/materiales<br>localhost:3000/dashboard<br>Ver respuesta JSON de la API</p></div>
+<div class="card" style="text-align:center;padding:20px">
+<div style="font-size:2.5em">🐙</div><h4 style="color:#333">3. GitHub</h4>
+<p>Actions: 3/3 checks ✅<br>Repositorio completo<br>Codigo fuente documentado</p></div></div>
+<h3 style="color:#333">Credenciales de prueba</h3>
+<table style="max-width:400px;margin:10px auto">
+<tr><th>Usuario</th><th>Pass</th><th>Rol</th></tr>
+<tr><td>admin</td><td>admin123</td><td>👑 Admin (todo)</td></tr>
+<tr><td>almacen</td><td>almacen123</td><td>📦 Almacen</td></tr>
+<tr><td>ventas</td><td>ventas123</td><td>💰 Ventas</td></tr>
+</table></div></div>
+
+<div class="slide purple" id="s18">
+<div class="logo">CKJ</div><div class="slide-num">18/18</div>
+<div style="text-align:center;margin-top:5%">
+<div class="big-icon">📦</div>
+<h1>Gracias</h1>
+<p style="font-size:1.3em;margin-bottom:15px">CKJ - Sistema de Almacen</p>
+<div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap;max-width:600px;margin:0 auto 20px">
+<span class="tech-badge" style="background:#fce4ec;color:#c62828">Angular 22</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">Node.js 22</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">Express</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">SQLite</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Ansible</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">DevSecOps</span>
+<span class="tech-badge" style="background:#fce4ec;color:#c62828">JWT</span>
+<span class="tech-badge" style="background:#e8f5e9;color:#2e7d32">PM2</span>
+<span class="tech-badge" style="background:#e3f2fd;color:#1565c0">GitHub Actions</span>
+<span class="tech-badge" style="background:#f3e5f5;color:#7b1fa2">Husky</span>
+<span class="tech-badge" style="background:#fff3e0;color:#e65100">Helmet</span>
+<span class="tech-badge" style="background:#fce4ec;color:#c62828">Docker</span>
+</div>
+<p style="opacity:.6">Repositorio: <strong>github.com/tonu7152-cmyk/CKJ-almacen</strong></p>
+<p style="opacity:.4;margin-top:20px">Documentacion completa en manual-usuario/ | Julio 2026</p>
+</div></div>
+
+<div class="nav">
+<button onclick="goSlide(-1)">◀ Anterior</button>
+<span class="counter" id="counter">1 / 18</span>
+<button onclick="goSlide(1)">Siguiente ▶</button>
+</div>
+
+<script>
+let current = 0;
+const total = 18;
+function goSlide(dir) {
+  document.querySelectorAll('.slide')[current].classList.remove('active');
+  current = Math.max(0, Math.min(total - 1, current + dir));
+  document.querySelectorAll('.slide')[current].classList.add('active');
+  document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goSlide(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goSlide(-1);
+});
+</script>
+</body>
+</html>
