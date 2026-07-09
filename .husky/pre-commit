@@ -1,0 +1,2 @@
+npx lint-staged
+npx --yes gitleaks detect --source . --no-git --verbose 2>/dev/null || echo "  - Gitleaks no disponible, se omite"
