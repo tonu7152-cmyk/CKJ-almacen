@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual del Desarrollador - CKJ Sistema de Almacen</title>
+<style>
+:root{--primary:#2e7d32;--primary-dark:#1b5e20;--accent:#e65100;--code-bg:#1e1e2e;--bg:#f5f5f5;--card:#fff;--text:#333;--border:#ddd}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:14px}
+header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:30px 20px;text-align:center}
+header h1{font-size:2.2em;margin-bottom:8px}header p{font-size:1.1em;opacity:.9}
+header .version{opacity:.6;font-size:.85em}
+header button{margin-top:12px;background:#fff;color:var(--primary);border:none;border-radius:8px;padding:10px 24px;font-size:15px;font-weight:600;cursor:pointer}
+header button:hover{background:#e8f5e9}
+.container{display:flex;max-width:1400px;margin:0 auto}
+nav.toc{width:270px;min-width:270px;background:var(--card);padding:16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--border)}
+nav.toc h2{font-size:1em;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary)}
+nav.toc a{display:block;padding:5px 10px;color:var(--text);text-decoration:none;border-radius:4px;margin-bottom:1px;font-size:.82em;transition:.2s}
+nav.toc a:hover{background:#e8f5e9;color:var(--primary)}
+nav.toc a.sub{padding-left:20px;font-size:.78em}
+main{flex:1;padding:25px 35px;max-width:920px}
+section{margin-bottom:40px;scroll-margin-top:15px}
+section h2{font-size:1.5em;color:var(--primary-dark);padding-bottom:8px;border-bottom:3px solid var(--primary);margin-bottom:20px}
+section h3{font-size:1.15em;color:#444;margin:18px 0 8px}
+section h4{font-size:1em;color:#555;margin:12px 0 6px}
+table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--card);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+th,td{padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:.9em}
+th{background:var(--primary);color:#fff;font-weight:600}
+tr:hover{background:#f1f8e9}
+code{background:#e8f5e9;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:.9em}
+pre{background:var(--code-bg);color:#cdd6f4;padding:14px 18px;border-radius:8px;overflow-x:auto;margin:10px 0;font-family:'Consolas','Courier New',monospace;font-size:.82em;line-height:1.5}
+pre .comment{color:#6c7086}pre .keyword{color:#cba6f7}pre .string{color:#a6e3a1}pre .func{color:#89b4fa}pre .const{color:#f9e2af}pre .num{color:#fab387}
+ul,ol{margin:8px 0 8px 22px}li{margin-bottom:4px;font-size:.95em}
+.card{background:var(--card);border-radius:8px;padding:16px;margin:12px 0;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.info{background:#e3f2fd;border-left:4px solid #1976d2;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.tip{background:#e8f5e9;border-left:4px solid #2e7d32;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.file-tree{font-family:'Consolas',monospace;font-size:.85em;line-height:1.7;padding:12px;background:#fafafa;border-radius:6px}
+.file-tree .folder{color:var(--primary);font-weight:600}
+.file-tree .file{color:#555}.file-tree .comment{color:#888;font-style:italic}
+@media print{.print-btn,nav.toc,header button{display:none!important}body{background:#fff;font-size:12px}nav.toc{display:none!important}.container{display:block!important;max-width:100%!important}main{max-width:100%!important;padding:0!important}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}pre{-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-inside:avoid}table{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{page-break-inside:auto}}
+@media(max-width:768px){.container{flex-direction:column}nav.toc{width:100%;min-width:auto;height:auto;position:relative}main{padding:15px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🔧 CKJ - Sistema de Almacen</h1>
+<p>Manual del Desarrollador - Documentacion Tecnica Completa</p>
+<span class="version">v1.0.0 — Julio 2026</span><br>
+<button onclick="window.print()">📄 Guardar como PDF</button>
+</header>
+
+<div class="container">
+<nav class="toc">
+<h2>📑 Contenido</h2>
+<a href="#intro">1. Introduccion</a>
+<a href="#stack" class="sub">Stack Tecnologico</a>
+<a href="#arquitectura">2. Arquitectura General</a>
+<a href="#flujo-autenticacion" class="sub">Flujo de Autenticacion</a>
+<a href="#estructura">3. Estructura del Proyecto</a>
+<a href="#backend-a" class="sub">Backend - Server.js</a>
+<a href="#frontend-a" class="sub">Frontend - Componentes</a>
+<a href="#bd">4. Base de Datos (SQLite)</a>
+<a href="#esquema-bd" class="sub">Esquema Completo</a>
+<a href="#setup">5. Configuracion Local</a>
+<a href="#api">6. API Endpoints Referencia</a>
+<a href="#materiales-api" class="sub">Materiales CRUD</a>
+<a href="#movimientos-api" class="sub">Movimientos</a>
+<a href="#usuarios-api" class="sub">Usuarios</a>
+<a href="#dashboard-api" class="sub">Dashboard</a>
+<a href="#frontend-dev">7. Frontend en Profundidad</a>
+<a href="#componentes" class="sub">Todos los Componentes</a>
+<a href="#servicios" class="sub">Servicios y Dependencias</a>
+<a href="#rutas" class="sub">Sistema de Rutas</a>
+<a href="#auth-flow" class="sub">Flujo de Auth Frontend</a>
+<a href="#devops">8. DevOps / Ansible</a>
+<a href="#seguridad">9. Seguridad DevSecOps</a>
+<a href="#ci-cd">10. CI/CD Pipeline</a>
+<a href="#husky-d" class="sub">Husky Pre-commit</a>
+<a href="#testing">11. Testing</a>
+<a href="#guia-cambios">12. Guia: Agregar una Nueva Feature</a>
+<a href="#troubleshooting">13. Troubleshooting</a>
+<a href="#comandos">14. Comandos Utiles</a>
+</nav>
+
+<main>
+
+<!-- 1. INTRODUCCION -->
+<section id="intro"><h2>1. Introduccion</h2>
+<p><strong>CKJ - Sistema de Almacen</strong> es una aplicacion web SPA para gestion de inventarios con arquitectura cliente-servidor. El frontend Angular 22 se comunica con una API REST Node.js/Express que persiste los datos en SQLite.</p>
+
+<h3 id="stack">Stack Tecnologico</h3>
+<table><tr><th>Capa</th><th>Tecnologia</th><th>Version</th><th>Proposito</th></tr>
+<tr><td>Frontend Framework</td><td>Angular</td><td>22.0.x</td><td>SPA con componentes standalone y lazy loading</td></tr>
+<tr><td>UI Components</td><td>Angular Material</td><td>22.0.x</td><td>Tablas, formularios, dialogos, iconos</td></tr>
+<tr><td>HTTP Client</td><td>@angular/common/http</td><td>22.0.x</td><td>Comunicacion con API via interceptors</td></tr>
+<tr><td>Backend API</td><td>Node.js + Express</td><td>22.x / 4.21.x</td><td>API REST con rutas y middlewares</td></tr>
+<tr><td>Base de Datos</td><td>SQLite (sql.js)</td><td>1.11.x</td><td>BD embebida en archivo, sin servidor</td></tr>
+<tr><td>Autenticacion</td><td>JWT (jsonwebtoken)</td><td>9.x</td><td>Tokens con 12h de expiracion</td></tr>
+<tr><td>Passwords</td><td>bcryptjs</td><td>3.x</td><td>Hash con 10 rondas de salt</td></tr>
+<tr><td>Seguridad HTTP</td><td>Helmet + express-rate-limit</td><td>8.x / 7.x</td><td>Headers seguros y rate limiting</td></tr>
+<tr><td>File Upload</td><td>Multer</td><td>2.x</td><td>Subida de comprobantes (max 5MB)</td></tr>
+<tr><td>PDF Export</td><td>jsPDF + jspdf-autotable</td><td>4.x / 5.x</td><td>Generacion de reportes PDF</td></tr>
+<tr><td>DevOps</td><td>Ansible</td><td>2.x</td><td>Automatizacion de despliegue</td></tr>
+<tr><td>CI/CD</td><td>GitHub Actions</td><td>-</td><td>Pipeline automatico en cada push</td></tr>
+<tr><td>Pre-commit</td><td>Husky + lint-staged + Prettier</td><td>9.x</td><td>Hooks de calidad antes de commit</td></tr>
+<tr><td>Seguridad Codigo</td><td>Gitleaks + Trivy + SonarQube</td><td>-</td><td>Escaneo de secretos y vulnerabilidades</td></tr>
+</table>
+</section>
+
+<!-- 2. ARQUITECTURA -->
+<section id="arquitectura"><h2>2. Arquitectura General</h2>
+<p>El sistema sigue una arquitectura <strong>cliente-servidor</strong> clasica con dos procesos independientes:</p>
+
+<pre>
+┌──────────────────────────────────────────────────────────────┐
+│                     NAVEGADOR (Cliente)                       │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │              Angular 22 SPA (puerto 4200)              │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐  │  │
+│  │  │ Dashboard│ │Inventario│ │ Ingreso  │ │  Ventas │ ...│  │
+│  │  └──────────┘ └──────────┘ └──────────┘ └─────────┘  │  │
+│  │  ┌────────────────────────────────────────────────┐  │  │
+│  │  │         AuthInterceptor (agrega JWT)            │  │  │
+│  │  └────────────────────────────────────────────────┘  │  │
+│  │  ┌────────────────────────────────────────────────┐  │  │
+│  │  │         HttpClient → API REST (fetch)          │  │  │
+│  │  └────────────────────────────────────────────────┘  │  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────┬───────────────────────────────────┘
+                           │ HTTP (localhost:3000)
+                           ▼
+┌──────────────────────────────────────────────────────────────┐
+│               SERVIDOR Node.js (puerto 3000)                  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  Express 4.21                                          │  │
+│  │  Middleware stack:                                     │  │
+│  │    Helmet → CORS → RateLimit → JSON → Routes          │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  authMiddleware(roles)  ← JWT verification + role check│  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  Rutas: /api/login  /materiales  /movimientos  /dashboard│  │
+│  │         /api/usuarios  /api/me                         │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  SQLite (sql.js) ←─ database.sqlite                    │  │
+│  │  Tablas: materiales, movimientos, usuarios             │  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘</pre>
+
+<h3 id="flujo-autenticacion">Flujo de Autenticacion</h3>
+<pre>
+CLIENTE                              SERVIDOR
+  │                                      │
+  │  POST /api/login                     │
+  │  {username, password}                │
+  │─────────────────────────────────→    │
+  │                    Busca usuario en BD│
+  │                    bcrypt.compare()   │
+  │                    jwt.sign({id,rol}) │
+  │  ←─────────────────────────────────  │
+  │  {token, user}                       │
+  │                                      │
+  │  [Guarda token en localStorage]      │
+  │                                      │
+  │  GET /materiales                     │
+  │  Authorization: Bearer &lt;token&gt;      │
+  │─────────────────────────────────→    │
+  │                    jwt.verify(token)  │
+  │                    queryAll(SQL)      │
+  │  ←─────────────────────────────────  │
+  │  [{materiales...}]                   │
+  │                                      │
+  │  [Token expira en 12h → redirect login]
+</pre>
+
+<div class="info">El token JWT contiene: <code>{id, username, rol}</code>. Se almacena en localStorage bajo la clave <code>ckj_token</code>. El usuario se guarda en <code>ckj_user</code>.</div>
+</section>
+
+<!-- 3. ESTRUCTURA -->
+<section id="estructura"><h2>3. Estructura del Proyecto</h2>
+<div class="file-tree">
+<span class="folder">ckj/</span>
+├── <span class="file">angular.json</span>                      <span class="comment">// Config build, assets, polyfills</span>
+├── <span class="file">package.json</span>                       <span class="comment">// Scripts: start, build, test, api</span>
+├── <span class="file">tsconfig.json</span>                       <span class="comment">// Config TS base</span>
+├── <span class="file">tsconfig.app.json</span>                    <span class="comment">// Config TS para la app</span>
+├── <span class="file">tsconfig.spec.json</span>                   <span class="comment">// Config TS para tests</span>
+├── <span class="file">.prettierrc</span>                          <span class="comment">// Formato codigo</span>
+├── <span class="file">.gitleaks.toml</span>                       <span class="comment">// Reglas deteccion secretos</span>
+├── <span class="file">.snyk</span>                                <span class="comment">// Politicas Snyk</span>
+├── <span class="file">.huskyignore</span>                         <span class="comment">// Archivos ignorados por hooks</span>
+├── <span class="file">sonar-project.properties</span>              <span class="comment">// Analisis SonarQube</span>
+├── <span class="file">Dockerfile</span>                            <span class="comment">// Build multi-stage (3 etapas)</span>
+│
+├── <span class="folder">.husky/</span>
+│   └── <span class="file">pre-commit</span>                          <span class="comment">// Hook: lint-staged + gitleaks</span>
+│
+├── <span class="folder">.github/workflows/</span>
+│   └── <span class="file">ci-cd.yml</span>                           <span class="comment">// GitHub Actions (3 jobs)</span>
+│
+├── <span class="folder">src/</span>                                  <span class="comment">// === FRONTEND ANGULAR ===</span>
+│   ├── <span class="file">index.html</span>                          <span class="comment">// HTML raiz con &lt;app-root&gt;</span>
+│   ├── <span class="file">main.ts</span>                            <span class="comment">// bootstrapApplication(appConfig)</span>
+│   ├── <span class="file">styles.css</span>                          <span class="comment">// Estilos globales</span>
+│   ├── <span class="file">material-theme.scss</span>                  <span class="comment">// Tema Angular Material custom</span>
+│   └── <span class="folder">app/</span>
+│       ├── <span class="file">app.ts</span>                            <span class="comment">// Componente raiz standalone</span>
+│       ├── <span class="file">app.html</span>                          <span class="comment">// Template: router-outlet</span>
+│       ├── <span class="file">app.css</span>                           <span class="comment">// Estilos layout general</span>
+│       ├── <span class="file">app.config.ts</span>                      <span class="comment">// Providers globales</span>
+│       ├── <span class="file">app.routes.ts</span>                      <span class="comment">// 8 rutas con lazy loading + guards</span>
+│       ├── <span class="folder">modelos/</span>
+│       │   ├── <span class="file">material.ts</span>                      <span class="comment">// Interface Material</span>
+│       │   └── <span class="file">movimiento.ts</span>                    <span class="comment">// Interfaces Movimiento, DashboardData</span>
+│       ├── <span class="folder">servicios/</span>
+│       │   ├── <span class="file">auth.ts</span>                         <span class="comment">// AuthService: login, logout, token, roles</span>
+│       │   ├── <span class="file">auth-guard.ts</span>                    <span class="comment">// CanActivate: auth + roles</span>
+│       │   ├── <span class="file">auth-interceptor.ts</span>              <span class="comment">// HttpInterceptor: adjunta JWT</span>
+│       │   ├── <span class="file">material.ts</span>                      <span class="comment">// MaterialService: CRUD HTTP</span>
+│       │   └── <span class="file">movimiento.ts</span>                    <span class="comment">// MovimientoService: movimientos + historial</span>
+│       └── <span class="folder">componentes/</span>
+│           ├── <span class="folder">login/</span>      <span class="comment">// Formulario login</span>
+│           ├── <span class="folder">dashboard/</span>  <span class="comment">// Tarjetas + tablas resumen</span>
+│           ├── <span class="folder">lista-materiales/</span>  <span class="comment">// CRUD con dialogo editar</span>
+│           ├── <span class="folder">registro-ingreso/</span>  <span class="comment">// Form ingreso + file upload</span>
+│           ├── <span class="folder">registro-salida/</span>  <span class="comment">// Form salida</span>
+│           ├── <span class="folder">ventas/</span>    <span class="comment">// Punto de venta con carrito</span>
+│           ├── <span class="folder">reportes/</span>  <span class="comment">// Historial + filtros + PDF</span>
+│           └── <span class="folder">usuarios/</span>  <span class="comment">// CRUD usuarios (solo admin)</span>
+│
+├── <span class="folder">backend/</span>                              <span class="comment">// === API NODE.JS ===</span>
+│   ├── <span class="file">server.js</span>                           <span class="comment">// Todo el backend en 1 archivo (~400 lineas)</span>
+│   ├── <span class="file">package.json</span>                       <span class="comment">// 7 dependencias</span>
+│   ├── <span class="file">database.sqlite</span>                     <span class="comment">// BD auto-generada (no subir a git)</span>
+│   └── <span class="folder">uploads/</span>                            <span class="comment">// Comprobantes subidos (.gitkeep)</span>
+│
+├── <span class="folder">ansible/</span>                              <span class="comment">// === DEVOPS ===</span>
+│   ├── <span class="file">deploy.yml</span>       <span class="comment">// 4 plays: common + app + nginx + security</span>
+│   ├── <span class="file">rollback.yml</span>     <span class="comment">// Checkout a commit anterior + rebuild</span>
+│   ├── <span class="file">status.yml</span>       <span class="comment">// Verifica PM2, nginx, API, disco</span>
+│   ├── <span class="file">ansible.cfg</span>      <span class="comment">// Config: pipelining, host key check off</span>
+│   ├── <span class="file">inventory.yml.example</span>  <span class="comment">// Plantilla inventario</span>
+│   ├── <span class="file">group_vars/all.yml</span>  <span class="comment">// Variables: app_name, repo, node_version</span>
+│   ├── <span class="folder">roles/</span>
+│   │   ├── <span class="folder">common/</span>     <span class="comment">// Instala Node.js 22, npm, PM2, nginx, git</span>
+│   │   ├── <span class="folder">app/</span>        <span class="comment">// Clona repo, npm install, ng build, pm2 start</span>
+│   │   ├── <span class="folder">nginx/</span>      <span class="comment">// Reverse proxy con SSL (Angular + API)</span>
+│   │   └── <span class="folder">security/</span>   <span class="comment">// UFW, Fail2Ban, SSH hardening</span>
+│   └── <span class="folder">devsecops/</span>
+│       ├── <span class="file">scan.yml</span>          <span class="comment">// npm audit, Trivy, busqueda de secretos</span>
+│       ├── <span class="file">devsecops.yml</span>     <span class="comment">// Pipeline hardening + scan</span>
+│       └── <span class="file">checkov-config.yml</span>  <span class="comment">// Escaneo IaC</span>
+│
+└── <span class="folder">manual-usuario/</span>                        <span class="comment">// Documentacion</span></div>
+
+<h3 id="backend-a">Backend - server.js</h3>
+<p>El backend es un unico archivo <code>backend/server.js</code> (~400 lineas) que contiene:</p>
+<table><tr><th>Seccion</th><th>Lineas</th><th>Descripcion</th></tr>
+<tr><td>Imports y config</td><td>1-30</td><td>Dependencias, constantes, multer config</td></tr>
+<tr><td>Helper functions</td><td>31-60</td><td>queryAll, queryOne, runSql, getLastId, saveDb</td></tr>
+<tr><td>initDatabase</td><td>61-90</td><td>CREATE TABLEs, seed data, migraciones</td></tr>
+<tr><td>seedUsuarios / seedDatabase</td><td>91-130</td><td>Datos de prueba</td></tr>
+<tr><td>Autenticacion</td><td>131-170</td><td>authMiddleware, POST /api/login, GET /api/me</td></tr>
+<tr><td>Materiales CRUD</td><td>171-260</td><td>GET/POST/PUT/PATCH/DELETE /materiales</td></tr>
+<tr><td>Movimientos</td><td>261-310</td><td>GET/POST /movimientos, historial/resumen</td></tr>
+<tr><td>Usuarios CRUD</td><td>311-360</td><td>GET/POST/PUT/DELETE /api/usuarios</td></tr>
+<tr><td>Dashboard</td><td>361-380</td><td>GET /dashboard con metricas agregadas</td></tr>
+<tr><td>Inicio</td><td>381-390</td><td>initDatabase().then(() => app.listen(PORT))</td></tr>
+</table>
+
+<h3 id="frontend-a">Frontend - Componentes</h3>
+<p>Todos los componentes son <strong>standalone</strong> (no usan NgModule). Patron: carpeta por componente con 4 archivos:</p>
+<pre><span class="keyword">nombre-componente/</span>
+├── <span class="file">nombre-componente.ts</span>      <span class="comment">// Logica (clase TS)</span>
+├── <span class="file">nombre-componente.html</span>    <span class="comment">// Template Angular</span>
+├── <span class="file">nombre-componente.css</span>     <span class="comment">// Estilos encapsulados</span>
+└── <span class="file">nombre-componente.spec.ts</span> <span class="comment">// Tests unitarios</span></pre>
+</section>
+
+<!-- 4. BD -->
+<section id="bd"><h2>4. Base de Datos (SQLite)</h2>
+<p>La BD se maneja con <strong>sql.js</strong> (SQLite compilado a WebAssembly). Se almacena en un archivo local <code>backend/database.sqlite</code> que se crea automaticamente al iniciar el servidor.</p>
+
+<div class="warning">La BD se genera automaticamente con datos de prueba si no existe. Para resetear: borra <code>backend/database.sqlite</code> y reinicia el servidor.</div>
+
+<h3 id="esquema-bd">Esquema Completo</h3>
+<pre><span class="keyword">CREATE TABLE</span> <span class="func">materiales</span> (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre          TEXT NOT NULL,
+    descripcion     TEXT DEFAULT '',
+    categoria       TEXT DEFAULT '',
+    cantidad        REAL NOT NULL DEFAULT 0,
+    unidad          TEXT DEFAULT 'unidades',
+    ubicacion       TEXT DEFAULT '',
+    fechaIngreso    TEXT DEFAULT (date('now')),
+    proveedor       TEXT DEFAULT '',
+    precioUnitario  REAL DEFAULT 0,
+    stockMinimo     REAL DEFAULT 10
+);
+
+<span class="keyword">CREATE TABLE</span> <span class="func">movimientos</span> (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    materialId      INTEGER NOT NULL,
+    tipo            TEXT NOT NULL CHECK(tipo IN ('ingreso','salida')),
+    cantidad        REAL NOT NULL,
+    fecha           TEXT DEFAULT (datetime('now','localtime')),
+    proveedor       TEXT DEFAULT '',
+    destino         TEXT DEFAULT '',
+    usuario         TEXT DEFAULT 'Admin',
+    comprobante     TEXT DEFAULT '',
+    FOREIGN KEY (materialId) REFERENCES materiales(id)
+);
+
+<span class="keyword">CREATE TABLE</span> <span class="func">usuarios</span> (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    username        TEXT UNIQUE NOT NULL,
+    password        TEXT NOT NULL,
+    nombre          TEXT NOT NULL,
+    rol             TEXT NOT NULL DEFAULT 'almacen',
+    activo          INTEGER DEFAULT 1
+);</pre>
+
+<h4>Relaciones</h4>
+<table><tr><th>Tabla</th><th>Relacion</th><th>Tipo</th></tr>
+<tr><td>movimientos.materialId</td><td>→ materiales.id</td><td>ON DELETE CASCADE (manual via DELETE FROM)</td></tr>
+</table>
+
+<h4>Seed Data</h4>
+<p>Al iniciar por primera vez, se insertan:</p>
+<ul>
+<li><strong>3 usuarios</strong>: admin, almacen, ventas (con passwords hasheados con bcrypt)</li>
+<li><strong>7 materiales</strong>: Cemento Portland, Varilla de Acero, Ladrillo Rojo, Tornillo Hexagonal, Pintura Blanca Latex, Pinturas CPP, Llave Cuchilla</li>
+<li><strong>4 movimientos</strong>: ingresos y salidas de prueba</li>
+</ul>
+</section>
+
+<!-- 5. SETUP -->
+<section id="setup"><h2>5. Configuracion Local</h2>
+<h3>Prerrequisitos</h3>
+<ul>
+<li>Node.js 22.x+</li>
+<li>npm 10.x+</li>
+<li>Angular CLI 22: <code>npm install -g @angular/cli</code></li>
+<li>Git</li>
+</ul>
+
+<h3>Pasos de instalacion</h3>
+<pre><span class="comment"># 1. Clonar</span>
+git clone https://github.com/tonu7152-cmyk/CKJ-almacen.git
+cd ckj
+
+<span class="comment"># 2. Instalar dependencias frontend (incluye Husky, lint-staged, Prettier)</span>
+npm install
+
+<span class="comment"># 3. Instalar dependencias backend</span>
+cd backend && npm install && cd ..
+
+<span class="comment"># 4. Iniciar backend (API en puerto 3000)</span>
+npm run api
+
+<span class="comment"># 5. En OTRA terminal, iniciar frontend (puerto 4200)</span>
+npm start</pre>
+
+<h3>Configurar para produccion</h3>
+<pre><span class="comment"># Variables de entorno (backend)</span>
+$env:PORT = 3000
+$env:JWT_SECRET = "mi-clave-segura-aqui"
+
+<span class="comment"># Build Angular para produccion</span>
+npm run build -- --configuration production
+
+<span class="comment"># Iniciar backend con PM2 (recomendado en servidor)</span>
+pm2 start backend/server.js --name ckj-api --watch
+pm2 save
+pm2 startup</pre>
+
+<h3>Estructura de configuracion</h3>
+<table><tr><th>Archivo</th><th>Que configura</th></tr>
+<tr><td><code>angular.json</code></td><td>Build, assets, styles, polyfills, budgets, outputPath</td></tr>
+<tr><td><code>tsconfig.json</code></td><td>Compilador TS: strict mode, ES2022, paths</td></tr>
+<tr><td><code>tsconfig.app.json</code></td><td>Includes/excludes para la app</td></tr>
+<tr><td><code>tsconfig.spec.ts</code></td><td>Configuracion para tests unitarios</td></tr>
+<tr><td><code>.prettierrc</code></td><td>Formato: semi, singleQuote, tabWidth 2</td></tr>
+</table>
+</section>
+
+<!-- 6. API -->
+<section id="api"><h2>6. API Endpoints - Referencia Completa</h2>
+
+<h3 id="materiales-api">Materiales CRUD</h3>
+<table><tr><th>Metodo</th><th>Endpoint</th><th>Auth</th><th>Body / Params</th><th>Respuesta</th></tr>
+<tr><td>GET</td><td><code>/materiales</code></td><td>-</td><td>-</td><td><code>Material[]</code></td></tr>
+<tr><td>GET</td><td><code>/materiales/:id</code></td><td>-</td><td>id param</td><td><code>Material</code></td></tr>
+<tr><td>POST</td><td><code>/materiales</code></td><td>Admin/Almacen</td><td>JSON Material (sin id)</td><td><code>Material</code> (201)</td></tr>
+<tr><td>PUT</td><td><code>/materiales/:id</code></td><td>Admin/Almacen</td><td>JSON Material completo</td><td><code>Material</code></td></tr>
+<tr><td>PATCH</td><td><code>/materiales/:id</code></td><td>Admin/Almacen</td><td><code>{cantidad: N}</code></td><td><code>Material</code></td></tr>
+<tr><td>DELETE</td><td><code>/materiales/:id</code></td><td>Admin</td><td>id param</td><td>204 No Content</td></tr>
+<tr><td>POST</td><td><code>/materiales/:id/ajustar</code></td><td>Admin</td><td><code>{cantidad, motivo}</code></td><td><code>Material</code></td></tr>
+</table>
+
+<h4>Ejemplo POST /materiales</h4>
+<pre><span class="comment">// Request</span>
+{
+  <span class="string">"nombre"</span>: <span class="string">"Martillo"</span>,
+  <span class="string">"descripcion"</span>: <span class="string">"Martillo de carpintero 500g"</span>,
+  <span class="string">"categoria"</span>: <span class="string">"Ferreteria"</span>,
+  <span class="string">"cantidad"</span>: <span class="num">20</span>,
+  <span class="string">"unidad"</span>: <span class="string">"unidades"</span>,
+  <span class="string">"ubicacion"</span>: <span class="string">"C2-Estante 3"</span>,
+  <span class="string">"precioUnitario"</span>: <span class="num">15.50</span>,
+  <span class="string">"stockMinimo"</span>: <span class="num">5</span>
+}
+
+<span class="comment">// Response 201</span>
+{
+  <span class="string">"id"</span>: <span class="num">8</span>,
+  <span class="string">"nombre"</span>: <span class="string">"Martillo"</span>,
+  <span class="string">"descripcion"</span>: <span class="string">"Martillo de carpintero 500g"</span>,
+  <span class="string">"categoria"</span>: <span class="string">"Ferreteria"</span>,
+  <span class="string">"cantidad"</span>: <span class="num">20</span>,
+  <span class="string">"unidad"</span>: <span class="string">"unidades"</span>,
+  <span class="string">"ubicacion"</span>: <span class="string">"C2-Estante 3"</span>,
+  <span class="string">"fechaIngreso"</span>: <span class="string">"2026-07-09"</span>,
+  <span class="string">"proveedor"</span>: <span class="string">""</span>,
+  <span class="string">"precioUnitario"</span>: <span class="num">15.5</span>,
+  <span class="string">"stockMinimo"</span>: <span class="num">5</span>
+}</pre>
+
+<h3 id="movimientos-api">Movimientos</h3>
+<table><tr><th>Metodo</th><th>Endpoint</th><th>Auth</th><th>Descripcion</th></tr>
+<tr><td>GET</td><td><code>/movimientos</code></td><td>-</td><td>Lista todos. Filtro: <code>?materialId=1</code></td></tr>
+<tr><td>GET</td><td><code>/movimientos/:id</code></td><td>-</td><td>Detalle con materialNombre</td></tr>
+<tr><td>POST</td><td><code>/movimientos</code></td><td>Admin/Almacen/Ventas</td><td>Crea movimiento (multipart/form-data para adjuntar comprobante)</td></tr>
+<tr><td>GET</td><td><code>/movimientos/resumen/historial</code></td><td>-</td><td>Historial con resumen. Filtro: <code>?periodo=semana|mes|all</code></td></tr>
+</table>
+
+<h4>POST /movimientos - Request (multipart)</h4>
+<pre><span class="keyword">Form fields:</span>
+  materialId: <span class="num">1</span>
+  tipo: <span class="string">"ingreso"</span> | <span class="string">"salida"</span>
+  cantidad: <span class="num">50</span>
+  proveedor: <span class="string">"Proveedor X"</span>       <span class="comment">// solo para ingresos</span>
+  destino: <span class="string">"Obra Central"</span>        <span class="comment">// solo para salidas</span>
+  usuario: <span class="string">"Admin"</span>
+  comprobante: (file)                <span class="comment">// opcional: PDF, JPG, PNG, max 5MB</span></pre>
+
+<h4>GET /movimientos/resumen/historial?periodo=mes - Response</h4>
+<pre>{
+  <span class="string">"periodo"</span>: <span class="string">"mes"</span>,
+  <span class="string">"movimientos"</span>: [...],
+  <span class="string">"resumen"</span>: {
+    <span class="string">"totalMovimientos"</span>: <span class="num">12</span>,
+    <span class="string">"totalIngresos"</span>: <span class="num">5</span>,
+    <span class="string">"totalSalidas"</span>: <span class="num">7</span>,
+    <span class="string">"cantIngresada"</span>: <span class="num">120</span>,
+    <span class="string">"cantSalida"</span>: <span class="num">45</span>,
+    <span class="string">"valorVentas"</span>: <span class="num">1250.00</span>
+  }
+}</pre>
+
+<h3 id="usuarios-api">Usuarios</h3>
+<table><tr><th>Metodo</th><th>Endpoint</th><th>Auth</th><th>Body</th><th>Respuesta</th></tr>
+<tr><td>GET</td><td><code>/api/usuarios</code></td><td>Admin</td><td>-</td><td><code>User[]</code> (sin password)</td></tr>
+<tr><td>POST</td><td><code>/api/usuarios</code></td><td>Admin</td><td><code>{username,password,nombre,rol}</code></td><td><code>User</code> (201)</td></tr>
+<tr><td>PUT</td><td><code>/api/usuarios/:id</code></td><td>Admin</td><td><code>{username?,password?,nombre?,rol?,activo?}</code></td><td><code>User</code></td></tr>
+<tr><td>DELETE</td><td><code>/api/usuarios/:id</code></td><td>Admin</td><td>-</td><td>204</td></tr>
+</table>
+
+<h3 id="dashboard-api">Dashboard</h3>
+<table><tr><th>Metodo</th><th>Endpoint</th><th>Respuesta</th></tr>
+<tr><td>GET</td><td><code>/dashboard</code></td><td><code>{totalMateriales,totalStock,totalValor,bajosStock,ingresosHoy,salidasHoy,movimientosRecientes[],materialesBajosStock[]}</code></td></tr>
+</table>
+</section>
+
+<!-- 7. FRONTEND -->
+<section id="frontend-dev"><h2>7. Frontend en Profundidad</h2>
+
+<h3 id="componentes">8 Componentes - Detalle</h3>
+<table><tr><th>#</th><th>Componente</th><th>Ruta</th><th>Standalone</th><th>Roles</th><th>Funcionalidad clave</th></tr>
+<tr><td>1</td><td><code>LoginComponent</code></td><td>/login</td><td>Si</td><td>-</td><td>Formulario reactivo, llamado a AuthService.login(), redirect a dashboard</td></tr>
+<tr><td>2</td><td><code>DashboardComponent</code></td><td>/dashboard</td><td>Si</td><td>Todos</td><td>6 tarjetas de metricas, tabla movimientos recientes, lista stock bajo</td></tr>
+<tr><td>3</td><td><code>ListaMateriales</code></td><td>/materiales</td><td>Si</td><td>Todos</td><td>Tabla Angular Material, dialogo de creacion/edicion, busqueda en tiempo real, delete con confirmacion</td></tr>
+<tr><td>4</td><td><code>RegistroIngreso</code></td><td>/ingreso</td><td>Si</td><td>Admin/Almacen</td><td>Form con material select, cantidad spinner, proveedor, file upload comprobante</td></tr>
+<tr><td>5</td><td><code>RegistroSalida</code></td><td>/salida</td><td>Si</td><td>Admin/Almacen/Ventas</td><td>Form con material select, cantidad, destino, file upload</td></tr>
+<tr><td>6</td><td><code>VentasComponent</code></td><td>/ventas</td><td>Si</td><td>Admin/Ventas</td><td>Select de productos, carrito de venta, calculo total, finalizar venta</td></tr>
+<tr><td>7</td><td><code>Reportes</code></td><td>/reportes</td><td>Si</td><td>Admin</td><td>Filtros periodo/tipo/material, tabla de movimientos, resumen estadistico, exportar PDF con jsPDF</td></tr>
+<tr><td>8</td><td><code>UsuariosComponent</code></td><td>/usuarios</td><td>Si</td><td>Admin</td><td>Tabla usuarios, dialogo crear/editar, eliminar con confirmacion, no auto-eliminacion</td></tr>
+</table>
+
+<h3 id="servicios">Servicios</h3>
+<table><tr><th>Servicio</th><th>Metodos principales</th><th>API que consume</th></tr>
+<tr><td><code>AuthService</code></td><td><code>login()</code>, <code>logout()</code>, <code>getToken()</code>, <code>getUser()</code>, <code>isLoggedIn()</code>, <code>hasRole()</code></td><td>POST /api/login, GET /api/me</td></tr>
+<tr><td><code>MaterialService</code></td><td><code>getAll()</code>, <code>getById()</code>, <code>create()</code>, <code>update()</code>, <code>delete()</code>, <code>ajustarStock()</code></td><td>CRUD /materiales</td></tr>
+<tr><td><code>MovimientoService</code></td><td><code>getAll()</code>, <code>getById()</code>, <code>create(formData)</code>, <code>getHistorial()</code></td><td>CRUD /movimientos</td></tr>
+</table>
+
+<h3 id="rutas">Sistema de Rutas</h3>
+<p>Definido en <code>app.routes.ts</code>. Usa <strong>lazy loading</strong> con <code>loadComponent()</code> y proteccion con <code>AuthGuard</code>:</p>
+<pre><span class="keyword">export const</span> routes: Routes = [
+  { path: <span class="string">''</span>, redirectTo: <span class="string">'/dashboard'</span>, pathMatch: <span class="string">'full'</span> },
+
+  <span class="comment">// Sin auth (publica)</span>
+  { path: <span class="string">'login'</span>, loadComponent: <span class="func">()</span> => <span class="func">import</span>(<span class="string">'./componentes/login/login'</span>).then(m => m.LoginComponent) },
+
+  <span class="comment">// Con auth (cualquier rol)</span>
+  { path: <span class="string">'dashboard'</span>,  loadComponent: ..., canActivate: [AuthGuard] },
+  { path: <span class="string">'materiales'</span>, loadComponent: ..., canActivate: [AuthGuard] },
+
+  <span class="comment">// Con auth + roles especificos</span>
+  { path: <span class="string">'ingreso'</span>, loadComponent: ..., canActivate: [AuthGuard], <span class="const">data</span>: { roles: [<span class="string">'admin'</span>, <span class="string">'almacen'</span>] }},
+  { path: <span class="string">'salida'</span>,  loadComponent: ..., canActivate: [AuthGuard], <span class="const">data</span>: { roles: [<span class="string">'admin'</span>, <span class="string">'almacen'</span>, <span class="string">'ventas'</span>] }},
+  { path: <span class="string">'ventas'</span>,  loadComponent: ..., canActivate: [AuthGuard], <span class="const">data</span>: { roles: [<span class="string">'admin'</span>, <span class="string">'ventas'</span>] }},
+  { path: <span class="string">'reportes'</span>, loadComponent: ..., canActivate: [AuthGuard], <span class="const">data</span>: { roles: [<span class="string">'admin'</span>] }},
+  { path: <span class="string">'usuarios'</span>, loadComponent: ..., canActivate: [AuthGuard], <span class="const">data</span>: { roles: [<span class="string">'admin'</span>] }},
+
+  { path: <span class="string">'**'</span>, redirectTo: <span class="string">'dashboard'</span> }
+];</pre>
+
+<h3 id="auth-flow">Flujo de Autenticacion Frontend</h3>
+<pre>
+<b>1. Login:</b> AuthService.login() → POST /api/login → recibe {token, user}
+   → localStorage.setItem('ckj_token', token)
+   → localStorage.setItem('ckj_user', JSON.stringify(user))
+   → userSubject.next(user)
+   → router.navigate(['/dashboard'])
+
+<b>2. Cada peticion HTTP:</b> AuthInterceptor.intercept()
+   → Toma ckj_token del localStorage
+   → Si existe, agrega header: Authorization: Bearer &lt;token&gt;
+
+<b>3. Proteccion de rutas:</b> AuthGuard.canActivate()
+   → isLoggedIn()? Si no → redirect /login
+   → route.data.roles existe? hasRole()? Si no → redirect /dashboard
+
+<b>4. Logout:</b> AuthService.logout()
+   → removeItem('ckj_token'), removeItem('ckj_user')
+   → userSubject.next(null)
+   → router.navigate(['/login'])</pre>
+
+<h3>Modelos (Interfaces)</h3>
+<pre><span class="keyword">export interface</span> <span class="func">Material</span> {
+  id?: number;
+  nombre: string;
+  descripcion: string;
+  categoria: string;
+  cantidad: number;
+  unidad: string;
+  ubicacion: string;
+  fechaIngreso: Date;
+  proveedor: string;
+  precioUnitario: number;
+  stockMinimo?: number;
+}
+
+<span class="keyword">export interface</span> <span class="func">Movimiento</span> {
+  id?: number;
+  materialId: number;
+  tipo: <span class="string">'ingreso'</span> | <span class="string">'salida'</span>;
+  cantidad: number;
+  fecha: string;
+  proveedor?: string;
+  destino?: string;
+  usuario: string;
+  materialNombre?: string;
+  comprobante?: string;
+  precioUnitario?: number;
+}
+
+<span class="keyword">export interface</span> <span class="func">DashboardData</span> {
+  totalMateriales: number;
+  totalStock: number;
+  totalValor: number;
+  bajosStock: number;
+  ingresosHoy: number;
+  salidasHoy: number;
+  movimientosRecientes: Movimiento[];
+  materialesBajosStock: { id, nombre, cantidad, unidad, stockMinimo }[];
+}</pre>
+</section>
+
+<!-- 8. DEVOPS -->
+<section id="devops"><h2>8. DevOps / Ansible</h2>
+<p>Los playbooks de Ansible automatizan el despliegue completo en servidores Linux Ubuntu/Debian.</p>
+
+<h3>Playbooks Disponibles</h3>
+<table><tr><th>Playbook</th><th>Tags</th><th>Roles que ejecuta</th></tr>
+<tr><td><code>deploy.yml</code></td><td>setup, deploy, web, hardening, scan</td><td>common → app → nginx → security → scan</td></tr>
+<tr><td><code>rollback.yml</code></td><td>-</td><td>git checkout, npm install, ng build, pm2 restart</td></tr>
+<tr><td><code>status.yml</code></td><td>-</td><td>Verifica: PM2, nginx, API, disco</td></tr>
+<tr><td><code>devsecops/scan.yml</code></td><td>npm, trivy, secrets, all</td><td>npm audit, Trivy, grep secretos</td></tr>
+</table>
+
+<h3>Roles</h3>
+<table><tr><th>Rol</th><th>Que instala/configura</th><th>Handlers</th></tr>
+<tr><td><code>common</code></td><td>Node.js 22.x, npm, PM2 (startup systemd), git, nginx, certbot</td><td>restart nginx</td></tr>
+<tr><td><code>app</code></td><td>Clona repo, npm install (x2), compila Angular, inicia API con PM2, genera .env</td><td>-</td></tr>
+<tr><td><code>nginx</code></td><td>Reverse proxy: Angular (/) → API (/api/, /materiales, /movimientos, /dashboard), SSL, uploads como estaticos</td><td>restart nginx</td></tr>
+<tr><td><code>security</code></td><td>UFW (22,80,443), Fail2Ban (3 intentos SSH, ban 1h), SSH hardening, permisos 0600 a .env y BD</td><td>restart fail2ban, restart ssh</td></tr>
+</table>
+
+<h3>Template de nginx</h3>
+<pre>server {
+    listen 443 ssl http2;
+    server_name {{ nginx_server_name }};
+
+    <span class="comment"># Frontend Angular (archivos estaticos)</span>
+    root {{ frontend_dir }};
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+        expires 1y;
+    }
+
+    <span class="comment"># API Backend (proxy a Express puerto 3000)</span>
+    location /api/ { proxy_pass http://127.0.0.1:3000; }
+
+    <span class="comment"># Endpoints directos del backend</span>
+    location ~ ^/(materiales|movimientos|dashboard) { proxy_pass http://127.0.0.1:3000; }
+}</pre>
+
+<h3>Comandos de despliegue</h3>
+<pre><span class="comment"># Despliegue completo</span>
+ansible-playbook -i inventory.yml deploy.yml
+
+<span class="comment"># Solo actualizar la aplicacion (mantiene nginx y seguridad)</span>
+ansible-playbook -i inventory.yml deploy.yml --tags <span class="string">"app"</span>
+
+<span class="comment"># Rollback a version anterior</span>
+ansible-playbook -i inventory.yml rollback.yml -e <span class="string">"git_ref=v1.0.0"</span>
+
+<span class="comment"># Ver estado del servidor</span>
+ansible-playbook -i inventory.yml status.yml
+
+<span class="comment"># Solo escaneo de seguridad</span>
+ansible-playbook -i inventory.yml devsecops/scan.yml</pre>
+</section>
+
+<!-- 9. SEGURIDAD -->
+<section id="seguridad"><h2>9. Seguridad (DevSecOps)</h2>
+
+<h3>Backend: Helmet + Rate Limiting</h3>
+<table><tr><th>Middleware</th><th>Configuracion</th><th>Headers/Proteccion</th></tr>
+<tr><td><code>helmet()</code></td><td>Default</td><td>Content-Security-Policy, X-Frame-Options, Strict-Transport-Security, X-Content-Type-Options, X-XSS-Protection, etc.</td></tr>
+<tr><td><code>express-rate-limit</code> global</td><td>100 req / 15 min</td><td>Por IP, todas las rutas /api/</td></tr>
+<tr><td><code>express-rate-limit</code> login</td><td>5 req / 15 min</td><td>Solo POST /api/login</td></tr>
+<tr><td><code>express.json({limit:'1mb'})</code></td><td>1MB max</td><td>Protege contra ataques DoS por body grande</td></tr>
+</table>
+
+<h3>Proteccion de Passwords y JWT</h3>
+<pre><span class="comment">// JWT: leer de variable de entorno, con fallback warning en desarrollo</span>
+<span class="keyword">const</span> JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn(<span class="string">'Usando JWT_SECRET por defecto'</span>);
+  return <span class="string">'ckj-almacen-secret-2026'</span>;
+})();
+
+<span class="comment">// Passwords: bcrypt con 10 rondas</span>
+<span class="keyword">const</span> hashed = bcrypt.hashSync(password, <span class="num">10</span>);
+
+<span class="comment">// SQL Injection: prevenido con queries parametrizadas</span>
+queryOne(<span class="string">'SELECT * FROM usuarios WHERE username=?'</span>, [username]);</pre>
+
+<h3>Herramientas de Escaneo</h3>
+<table><tr><th>Herramienta</th><th>Config</th><th>Donde se ejecuta</th></tr>
+<tr><td><strong>npm audit</strong></td><td><code>--audit-level=high</code></td><td>CI/CD (GitHub Actions) + Ansible scan.yml</td></tr>
+<tr><td><strong>Trivy</strong></td><td>Severity HIGH, CRITICAL</td><td>Ansible scan.yml (escanea sistema de archivos)</td></tr>
+<tr><td><strong>Gitleaks</strong></td><td><code>.gitleaks.toml</code></td><td>Husky pre-commit (local) + manual</td></tr>
+<tr><td><strong>Checkov</strong></td><td><code>devsecops/checkov-config.yml</code></td><td>Manual sobre playbooks Ansible</td></tr>
+<tr><td><strong>SonarQube</strong></td><td><code>sonar-project.properties</code></td><td>Manual <code>sonar-scanner</code></td></tr>
+<tr><td><strong>Snyk</strong></td><td><code>.snyk</code></td><td>Manual <code>snyk test --all-projects</code></td></tr>
+</table>
+</section>
+
+<!-- 10. CI/CD -->
+<section id="ci-cd"><h2>10. CI/CD Pipeline</h2>
+<p>Definido en <code>.github/workflows/ci-cd.yml</code>. Se ejecuta en cada push a <code>main</code>, <code>master</code> o <code>develop</code>, y en cada PR.</p>
+
+<h3>Jobs</h3>
+<table><tr><th>Job</th><th>Pasos</th><th>Duracion aprox.</th></tr>
+<tr><td><strong>frontend</strong></td><td>checkout → setup node 22 → npm ci → ng build --prod → npm test</td><td>~2 min</td></tr>
+<tr><td><strong>backend</strong></td><td>checkout → setup node 22 → npm ci → node --check server.js</td><td>~1 min</td></tr>
+<tr><td><strong>devsecops</strong></td><td>checkout → setup node → npm audit (backend y frontend) → grep secretos</td><td>~1 min</td></tr>
+</table>
+
+<h3 id="husky-d">Husky - Pre-commit Hooks</h3>
+<p>Se ejecutan automaticamente en cada <code>git commit</code> en el entorno local del desarrollador.</p>
+
+<h4>pre-commit hook (.husky/pre-commit)</h4>
+<pre><span class="comment">#!/usr/bin/env sh</span>
+npx lint-staged
+npx gitleaks detect --source . --no-git --verbose 2>/dev/null || echo "Gitleaks omitido"</pre>
+
+<h4>lint-staged (package.json)</h4>
+<pre><span class="string">"lint-staged"</span>: {
+  <span class="string">"*.{ts,js,json,md,css,html}"</span>: <span class="string">"prettier --write --ignore-unknown"</span>,
+  <span class="string">"*.{ts,js}"</span>: <span class="string">"eslint --fix --quiet 2>/dev/null || echo 'ESLint no configurado'"</span>
+}</pre>
+
+<h4>Archivos ignorados por Husky (.huskyignore)</h4>
+<pre>node_modules/
+dist/
+backend/node_modules/
+backend/database.sqlite
+backend/uploads/
+.husky/
+.git/</pre>
+
+<div class="tip">Para saltar hooks en emergencias: <code>git commit --no-verify -m "mensaje"</code></div>
+</section>
+
+<!-- 11. TESTING -->
+<section id="testing"><h2>11. Testing</h2>
+<p>Los tests unitarios se ejecutan con Vitest (integrados con Angular CLI):</p>
+
+<pre><span class="comment"># Ejecutar todos los tests</span>
+npm test
+
+<span class="comment"># Tests con watch mode</span>
+ng test --watch
+
+<span class="comment"># Tests con cobertura</span>
+ng test --code-coverage</pre>
+
+<h3>Tests existentes</h3>
+<table><tr><th>Archivo</th><th>Que prueba</th></tr>
+<tr><td><code>app.spec.ts</code></td><td>Componente raiz</td></tr>
+<tr><td><code>dashboard.spec.ts</code></td><td>Dashboard component</td></tr>
+<tr><td><code>lista-materiales.spec.ts</code></td><td>Lista de materiales (pendiente implementar)</td></tr>
+<tr><td><code>registro-ingreso.spec.ts</code></td><td>Formulario de ingreso</td></tr>
+<tr><td><code>registro-salida.spec.ts</code></td><td>Formulario de salida</td></tr>
+<tr><td><code>reportes.spec.ts</code></td><td>Reportes e historial</td></tr>
+<tr><td><code>material.spec.ts</code></td><td>MaterialService (API calls)</td></tr>
+</table>
+
+<div class="info">Los tests usan Vitest. Configuracion en <code>tsconfig.spec.json</code>.</div>
+</section>
+
+<!-- 12. GUIA -->
+<section id="guia-cambios"><h2>12. Guia: Agregar una Nueva Feature</h2>
+<p>Ejemplo completo: Agregar una nueva pagina "Proveedores" al sistema.</p>
+
+<h3>Paso 1: Crear el componente Angular</h3>
+<pre>ng generate component componentes/proveedores</pre>
+
+<p>Esto crea: <code>proveedores.ts</code>, <code>proveedores.html</code>, <code>proveedores.css</code>, <code>proveedores.spec.ts</code></p>
+
+<h3>Paso 2: Agregar la ruta</h3>
+<p>En <code>app.routes.ts</code>:</p>
+<pre>{
+  path: <span class="string">'proveedores'</span>,
+  loadComponent: () => import(<span class="string">'./componentes/proveedores/proveedores'</span>).then(m => m.ProveedoresComponent),
+  canActivate: [AuthGuard],
+  data: { roles: [<span class="string">'admin'</span>] }
+}</pre>
+
+<h3>Paso 3: Agregar endpoint en el backend</h3>
+<p>En <code>backend/server.js</code>:</p>
+<pre><span class="comment">// Crear tabla (en initDatabase)</span>
+db.run(<span class="string">`CREATE TABLE IF NOT EXISTS proveedores (...)`</span>);
+
+<span class="comment">// Crear rutas</span>
+app.get(<span class="string">'/api/proveedores'</span>, authMiddleware(), (req, res) => {
+  res.json(queryAll(<span class="string">'SELECT * FROM proveedores'</span>));
+});
+
+app.post(<span class="string">'/api/proveedores'</span>, authMiddleware([<span class="string">'admin'</span>]), (req, res) => {
+  <span class="keyword">const</span> { nombre, telefono } = req.body;
+  runSql(<span class="string">'INSERT INTO proveedores VALUES (NULL,?,?)'</span>, [nombre, telefono]);
+  res.status(201).json(queryOne(<span class="string">'SELECT * FROM proveedores WHERE id=?'</span>, [getLastId()]));
+});</pre>
+
+<h3>Paso 4: Agregar el menu de navegacion</h3>
+<p>En el template del componente principal o sidebar, agrega el link.</p>
+
+<h3>Paso 5: Agregar al menu de Ansible (nginx)</h3>
+<p>Si el nuevo endpoint usa una ruta diferente a los existentes, agregala en <code>roles/nginx/templates/ckj.nginx.conf.j2</code>.</p>
+
+<h3>Paso 6: Commit siguiendo DevSecOps</h3>
+<pre>git add -A
+<span class="comment"># Husky ejecutara: prettier + gitleaks</span>
+git commit -m <span class="string">"feat: agregar modulo de proveedores"</span>
+<span class="comment"># CI/CD ejecutara: build + test + npm audit</span>
+git push</pre>
+</section>
+
+<!-- 13. TROUBLESHOOTING -->
+<section id="troubleshooting"><h2>13. Troubleshooting</h2>
+
+<div class="card"><h4>Error: Token expirado o invalido</h4>
+<p><strong>Causa:</strong> El token JWT expiro (12h) o el servidor se reinicio con diferente JWT_SECRET.</p>
+<p><strong>Solucion:</strong> Hacer logout y login nuevamente. Si persiste, verifica que JWT_SECRET sea consistente.</p></div>
+
+<div class="card"><h4>Error: database.sqlite no encontrada / corrupta</h4>
+<p><strong>Causa:</strong> La BD se corrompio o fue borrada.</p>
+<p><strong>Solucion:</strong> Detener el servidor, borrar <code>backend/database.sqlite</code>, reiniciar. Se recreara automaticamente con seed data.</p></div>
+
+<div class="card"><h4>Error: CORS bloquea peticiones</h4>
+<p><strong>Causa:</strong> El frontend (puerto 4200) intenta llamar al backend (puerto 3000) y CORS no esta configurado.</p>
+<p><strong>Solucion:</strong> Verificar que <code>app.use(cors())</code> este en <code>server.js</code>.</p></div>
+
+<div class="card"><h4>Error: npm install falla con husky</h4>
+<p><strong>Causa:</strong> Husky intenta instalar hooks de git y el directorio .git no existe o hay permisos.</p>
+<p><strong>Solucion:</strong> <code>git init</code> primero, luego <code>npm install</code>. O temporalmente: <code>npm install --ignore-scripts</code>.</p></div>
+
+<div class="card"><h4>Error: No se ven los cambios en Angular</h4>
+<p><strong>Causa:</strong> Cache del navegador o compilacion atascada.</p>
+<p><strong>Solucion:</strong> <code>Ctrl + Shift + R</code> (recarga forzada) o <code>ng serve --force</code>.</p></div>
+
+<div class="card"><h4>Error: Husky bloquea commit</h4>
+<p><strong>Causa:</strong> Gitleaks detecto un posible secreto o Prettier fallo.</p>
+<p><strong>Solucion:</strong> Corrige el secreto o usa <code>git commit --no-verify</code> solo si es falso positivo. Verifica con <code>npx husky run pre-commit</code>.</p></div>
+
+<div class="card"><h4>Error: Puerto 3000 o 4200 ya en uso</h4>
+<p><strong>Causa:</strong> Otro proceso ocupando el puerto.</p>
+<p><strong>Solucion:</strong> <code>netstat -ano | findstr :3000</code> para identificar el PID, luego <code>taskkill /PID &lt;PID&gt; /F</code>.</p></div>
+</section>
+
+<!-- 14. COMANDOS -->
+<section id="comandos"><h2>14. Comandos Utiles</h2>
+<div class="card">
+<pre><span class="comment"># ========== DESARROLLO LOCAL ==========</span>
+npm start                        <span class="comment"># Frontend Angular (localhost:4200)</span>
+npm run api                      <span class="comment"># Backend API (localhost:3000)</span>
+npm run api:dev                  <span class="comment"># Backend con --watch (auto-reload)</span>
+npm test                         <span class="comment"># Tests unitarios con Vitest</span>
+npm run build -- --configuration production  <span class="comment"># Build produccion</span>
+
+<span class="comment"># ========== ANGULAR CLI ==========</span>
+ng generate component componentes/nuevo    <span class="comment"># Crear componente</span>
+ng generate service servicios/nuevo         <span class="comment"># Crear servicio</span>
+ng generate interface modelos/nuevo         <span class="comment"># Crear interfaz</span>
+
+<span class="comment"># ========== BACKEND ==========</span>
+cd backend && npm install         <span class="comment"># Instalar deps del backend</span>
+node backend/server.js            <span class="comment"># Iniciar servidor manualmente</span>
+cd backend && npm audit           <span class="comment"># Escanear vulnerabilidades backend</span>
+
+<span class="comment"># ========== GIT Y HUSKY ==========</span>
+git add -A && git commit -m "msg" <span class="comment"># Commit normal (Husky se ejecuta)</span>
+git commit --no-verify -m "msg"   <span class="comment"># Saltar Husky (solo emergencia)</span>
+npx husky run pre-commit          <span class="comment"># Probar hook manualmente</span>
+
+<span class="comment"># ========== SEGURIDAD ==========</span>
+npm audit --audit-level=high      <span class="comment"># Escanear dependencias frontend</span>
+npx gitleaks detect --source .    <span class="comment"># Buscar secretos en codigo</span>
+npx trivy filesystem --severity HIGH backend/  <span class="comment"># Escaneo de archivos</span>
+sonar-scanner                     <span class="comment"># Analisis SonarQube</span>
+
+<span class="comment"># ========== ANSIBLE (PRODUCCION) ==========</span>
+ansible-playbook deploy.yml       <span class="comment"># Despliegue completo</span>
+ansible-playbook deploy.yml --tags "app"   <span class="comment"># Solo actualizar app</span>
+ansible-playbook deploy.yml --tags "security" <span class="comment"># Solo hardening</span>
+ansible-playbook status.yml       <span class="comment"># Ver estado del servidor</span>
+ansible-playbook rollback.yml -e "git_ref=v1.0.0"  <span class="comment"># Rollback</span>
+ansible-playbook devsecops/scan.yml  <span class="comment"># Escaneo de seguridad</span>
+
+<span class="comment"># ========== DOCKER ==========</span>
+docker build -t ckj:latest .      <span class="comment"># Construir imagen</span>
+docker run -p 3000:3000 ckj:latest <span class="comment"># Ejecutar contenedor</span>
+
+<span class="comment"># ========== GIT TAGS (VERSIONES) ==========</span>
+git tag -a v1.1.0 -m "Nueva version"
+git push origin v1.1.0</pre>
+</div>
+</section>
+
+</main>
+</div>
+<footer style="text-align:center;padding:20px;color:#888;font-size:.85em;border-top:1px solid #ddd"><p><strong>CKJ - Sistema de Almacen</strong> v1.0.0 | Manual del Desarrollador | Julio 2026</p></footer>
+</body>
+</html>

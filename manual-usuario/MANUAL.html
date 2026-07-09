@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario - CKJ Sistema de Almacén</title>
+<style>
+  :root {
+    --primary: #1976d2;
+    --primary-dark: #1565c0;
+    --accent: #ff6f00;
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --text: #333;
+    --border: #ddd;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Boton flotante para imprimir */
+  .print-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(25,118,210,0.4);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .print-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25,118,210,0.5);
+  }
+
+  @media print {
+    body { background: white; }
+    .print-btn { display: none !important; }
+    nav.toc { display: none !important; }
+    .container { display: block !important; max-width: 100% !important; }
+    main { max-width: 100% !important; padding: 0 !important; }
+    header { padding: 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card, .screenshot, table, .info, .warning, .tip {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      break-inside: avoid;
+    }
+    section { break-inside: auto; }
+    .badge, .badge-admin, .badge-almacen, .badge-ventas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header h1 { font-size: 2.5em; margin-bottom: 10px; }
+  header p { font-size: 1.2em; opacity: 0.9; }
+  header .version { position: absolute; bottom: 10px; right: 20px; opacity: 0.6; font-size: 0.9em; }
+
+  /* Layout */
+  .container { display: flex; max-width: 1400px; margin: 0 auto; }
+  nav.toc {
+    width: 280px;
+    min-width: 280px;
+    background: var(--card);
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+  nav.toc h2 { font-size: 1.1em; color: var(--primary); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); }
+  nav.toc a {
+    display: block;
+    padding: 8px 12px;
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    font-size: 0.9em;
+    transition: all 0.2s;
+  }
+  nav.toc a:hover { background: #e3f2fd; color: var(--primary); }
+  nav.toc a.active { background: var(--primary); color: white; }
+  nav.toc a.sub { padding-left: 24px; font-size: 0.85em; }
+
+  main { flex: 1; padding: 30px 40px; max-width: 900px; }
+
+  /* Sections */
+  section { margin-bottom: 50px; scroll-margin-top: 20px; }
+  section h2 {
+    font-size: 1.8em;
+    color: var(--primary-dark);
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--primary);
+    margin-bottom: 25px;
+  }
+  section h3 { font-size: 1.3em; color: #444; margin: 20px 0 10px; }
+  section h4 { font-size: 1.1em; color: #555; margin: 15px 0 8px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .screenshot {
+    margin: 20px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .screenshot img { width: 100%; display: block; }
+  .screenshot .caption {
+    background: var(--card);
+    padding: 10px 15px;
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--primary); color: white; font-weight: 600; }
+  tr:hover { background: #f8f9fa; }
+
+  /* Lists */
+  ul, ol { margin: 10px 0 10px 25px; }
+  li { margin-bottom: 6px; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+  .badge-admin { background: #e3f2fd; color: #1565c0; }
+  .badge-almacen { background: #fff3e0; color: #e65100; }
+  .badge-ventas { background: #e8f5e9; color: #2e7d32; }
+  .badge-yes { background: #c8e6c9; color: #2e7d32; }
+  .badge-no { background: #ffcdd2; color: #c62828; }
+
+  /* Steps */
+  .step {
+    display: flex;
+    align-items: flex-start;
+    margin: 10px 0;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+  }
+  .step .num {
+    background: var(--primary);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Info boxes */
+  .info, .warning, .tip {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border-left: 4px solid;
+  }
+  .info { background: #e3f2fd; border-color: var(--primary); }
+  .warning { background: #fff3e0; border-color: var(--accent); }
+  .tip { background: #e8f5e9; border-color: #4caf50; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-size: 0.9em;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .container { flex-direction: column; }
+    nav.toc { width: 100%; min-width: auto; height: auto; position: relative; }
+    main { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📦 CKJ - Sistema de Almacén</h1>
+  <p>Manual de Usuario</p>
+  <span class="version">v1.0.0 — Julio 2026</span>
+  <button onclick="window.print()" style="margin-top:15px;background:white;color:#1976d2;border:none;border-radius:8px;padding:10px 24px;font-size:16px;font-weight:600;cursor:pointer;">📄 Guardar como PDF</button>
+</header>
+
+<div class="container">
+
+<!-- ===== TOC ===== -->
+<nav class="toc">
+  <h2>📑 Contenido</h2>
+  <a href="#intro">1. Introducción</a>
+  <a href="#requisitos" class="sub">Requisitos del Sistema</a>
+  <a href="#acceso">2. Acceso al Sistema</a>
+  <a href="#dashboard">3. Dashboard</a>
+  <a href="#inventario">4. Gestión de Inventario</a>
+  <a href="#ingreso">5. Registrar Ingreso</a>
+  <a href="#salida">6. Registrar Salida</a>
+  <a href="#ventas">7. Punto de Venta</a>
+  <a href="#reportes">8. Historial y Reportes</a>
+  <a href="#usuarios">9. Gestión de Usuarios</a>
+  <a href="#roles">10. Roles y Permisos</a>
+  <a href="#problemas">11. Solución de Problemas</a>
+</nav>
+
+<main>
+
+<!-- ===== INTRO ===== -->
+<section id="intro">
+  <h2>1. Introducción</h2>
+  <p><strong>CKJ - Sistema de Almacén</strong> es una aplicación web para la gestión completa de inventarios, diseñada para pequeñas y medianas empresas. Permite controlar entradas y salidas de materiales, generar reportes, administrar usuarios y realizar ventas.</p>
+
+  <h3>Tecnología</h3>
+  <table>
+    <tr><th>Componente</th><th>Tecnología</th></tr>
+    <tr><td>Frontend</td><td>Angular (SPA moderna)</td></tr>
+    <tr><td>Backend</td><td>Node.js + Express</td></tr>
+    <tr><td>Base de Datos</td><td>SQLite</td></tr>
+  </table>
+</section>
+
+<section id="requisitos">
+  <h3>Requisitos del Sistema</h3>
+
+  <h4>Para el usuario (navegador web)</h4>
+  <ul>
+    <li>Google Chrome 90+, Firefox 90+, Edge 90+ o Safari 14+</li>
+    <li>Resolución mínima: 1024 × 768 px</li>
+    <li>Conexión a internet o red local</li>
+  </ul>
+
+  <h4>Para el administrador del sistema</h4>
+  <ul>
+    <li>Node.js 22.x instalado</li>
+    <li>npm (incluido con Node.js)</li>
+    <li>Acceso al servidor donde corre la aplicación</li>
+  </ul>
+</section>
+
+<!-- ===== ACCESO ===== -->
+<section id="acceso">
+  <h2>2. Acceso al Sistema</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/01-login.png" alt="Pantalla de inicio de sesión">
+    <div class="caption">Pantalla de inicio de sesión</div>
+  </div>
+
+  <p>Al ingresar a la aplicación, verás la pantalla de inicio de sesión con el logo y los campos para ingresar tus credenciales.</p>
+
+  <h3>Datos de acceso predefinidos</h3>
+  <table>
+    <tr><th>Usuario</th><th>Contraseña</th><th>Rol</th></tr>
+    <tr><td><code>admin</code></td><td><code>admin123</code></td><td><span class="badge badge-admin">👑 Admin</span></td></tr>
+    <tr><td><code>almacen</code></td><td><code>almacen123</code></td><td><span class="badge badge-almacen">📦 Almacén</span></td></tr>
+    <tr><td><code>ventas</code></td><td><code>ventas123</code></td><td><span class="badge badge-ventas">💰 Ventas</span></td></tr>
+  </table>
+
+  <h3>Pasos para iniciar sesión</h3>
+  <div class="step"><span class="num">1</span> Escribe tu <strong>nombre de usuario</strong> en el campo "Usuario"</div>
+  <div class="step"><span class="num">2</span> Escribe tu <strong>contraseña</strong> en el campo "Contraseña"</div>
+  <div class="step"><span class="num">3</span> Haz clic en el botón <strong>"Ingresar"</strong></div>
+
+  <div class="warning">⚠️ Si olvidas tu contraseña, contacta al administrador del sistema.</div>
+</section>
+
+<!-- ===== DASHBOARD ===== -->
+<section id="dashboard">
+  <h2>3. Dashboard</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/02-dashboard.png" alt="Dashboard">
+    <div class="caption">Dashboard - Resumen del estado del almacén</div>
+  </div>
+
+  <p>El Dashboard es la pantalla principal después de iniciar sesión. Muestra un resumen del estado actual del almacén.</p>
+
+  <div class="card">
+    <h3>Indicadores principales</h3>
+    <table>
+      <tr><th>Indicador</th><th>Descripción</th></tr>
+      <tr><td>📦 Materiales</td><td>Total de materiales registrados</td></tr>
+      <tr><td>📊 Total en Stock</td><td>Suma de todas las cantidades en inventario</td></tr>
+      <tr><td>💰 Valor Total</td><td>Suma del valor monetario del inventario</td></tr>
+      <tr><td>⚠️ Stock Bajo</td><td>Materiales por debajo del stock mínimo</td></tr>
+      <tr><td>📥 Ingresos Hoy</td><td>Ingresos registrados el día de hoy</td></tr>
+      <tr><td>📤 Salidas Hoy</td><td>Salidas registradas el día de hoy</td></tr>
+    </table>
+  </div>
+
+  <h3>Secciones del Dashboard</h3>
+
+  <h4>Movimientos Recientes</h4>
+  <p>Muestra una tabla con los últimos 5 movimientos realizados, incluyendo material, tipo (Ingreso/Salida), cantidad, fecha y origen/destino.</p>
+
+  <h4>Materiales con Stock Bajo</h4>
+  <p>Lista los materiales cuya cantidad actual está por debajo del stock mínimo configurado. Desde aquí puedes hacer clic en <strong>"Ir al Inventario"</strong> para gestionarlos.</p>
+
+  <div class="tip">💡 Los valores en el Dashboard se actualizan automáticamente al registrar nuevos movimientos.</div>
+</section>
+
+<!-- ===== INVENTARIO ===== -->
+<section id="inventario">
+  <h2>4. Gestión de Inventario</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/03-materiales.png" alt="Lista de materiales">
+    <div class="caption">Inventario - Lista completa de materiales</div>
+  </div>
+
+  <h3>Lista de Materiales</h3>
+  <p>La sección <strong>Inventario</strong> muestra todos los materiales registrados en una tabla con las siguientes columnas:</p>
+
+  <table>
+    <tr><th>Columna</th><th>Descripción</th></tr>
+    <tr><td>Nombre</td><td>Nombre del material</td></tr>
+    <tr><td>Categoría</td><td>Clasificación del material</td></tr>
+    <tr><td>Cantidad</td><td>Stock actual</td></tr>
+    <tr><td>Unidad</td><td>Unidad de medida (bolsas, unidades, galones, etc.)</td></tr>
+    <tr><td>Ubicación</td><td>Ubicación física en el almacén</td></tr>
+    <tr><td>Precio Unitario</td><td>Precio por unidad</td></tr>
+    <tr><td>Stock Mínimo</td><td>Cantidad mínima antes de alertar</td></tr>
+    <tr><td>Acciones</td><td>Botones para editar ✏️ o eliminar 🗑️</td></tr>
+  </table>
+
+  <h3>Acciones disponibles</h3>
+
+  <h4>🔍 Buscar material</h4>
+  <p>Usa el campo de búsqueda para filtrar materiales por nombre o categoría.</p>
+
+  <h4>➕ Agregar nuevo material</h4>
+  <div class="step"><span class="num">1</span> Haz clic en el botón <strong>"Nuevo Material"</strong></div>
+  <div class="step"><span class="num">2</span> Completa los campos del formulario: Nombre, Descripción, Categoría, Cantidad, Unidad, Ubicación, Proveedor, Precio Unitario y Stock Mínimo</div>
+  <div class="step"><span class="num">3</span> Haz clic en <strong>"Guardar"</strong></div>
+
+  <h4>✏️ Editar material</h4>
+  <div class="step"><span class="num">1</span> Haz clic en el ícono de <strong>lápiz</strong> ✏️ en la fila del material</div>
+  <div class="step"><span class="num">2</span> Modifica los campos necesarios</div>
+  <div class="step"><span class="num">3</span> Haz clic en <strong>"Guardar"</strong></div>
+
+  <h4>🗑️ Eliminar material</h4>
+  <div class="step"><span class="num">1</span> Haz clic en el ícono de <strong>basurero</strong> 🗑️ en la fila del material</div>
+  <div class="step"><span class="num">2</span> Confirma la eliminación</div>
+
+  <div class="warning">⚠️ Eliminar un material también eliminará todos los movimientos asociados.</div>
+</section>
+
+<!-- ===== INGRESO ===== -->
+<section id="ingreso">
+  <h2>5. Registrar Ingreso</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/04-ingreso.png" alt="Registrar Ingreso">
+    <div class="caption">Formulario de registro de ingreso de materiales</div>
+  </div>
+
+  <p>Esta sección permite registrar la entrada de materiales al almacén, aumentando automáticamente el stock.</p>
+
+  <h3>Pasos para registrar un ingreso</h3>
+  <div class="step"><span class="num">1</span> Selecciona el <strong>Material</strong> del menú desplegable</div>
+  <div class="step"><span class="num">2</span> Ingresa la <strong>Cantidad</strong> a ingresar (usa los botones +/− o escribe directamente)</div>
+  <div class="step"><span class="num">3</span> Opcional: Ingresa el <strong>Proveedor</strong> que entrega el material</div>
+  <div class="step"><span class="num">4</span> Opcional: Adjunta un <strong>comprobante</strong> (PDF o imagen)</div>
+  <div class="step"><span class="num">5</span> Haz clic en <strong>"Registrar Ingreso"</strong></div>
+
+  <div class="info">✅ El sistema actualizará automáticamente el stock del material.</div>
+
+  <h4>Botón "Ver Inventario"</h4>
+  <p>Abre una ventana emergente con la lista completa de materiales y sus stocks actuales para consulta rápida mientras registras.</p>
+</section>
+
+<!-- ===== SALIDA ===== -->
+<section id="salida">
+  <h2>6. Registrar Salida</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/05-salida.png" alt="Registrar Salida">
+    <div class="caption">Formulario de registro de salida de materiales</div>
+  </div>
+
+  <p>Esta sección permite registrar la salida de materiales del almacén, descontando automáticamente del stock.</p>
+
+  <h3>Pasos para registrar una salida</h3>
+  <div class="step"><span class="num">1</span> Selecciona el <strong>Material</strong> del menú desplegable</div>
+  <div class="step"><span class="num">2</span> Ingresa la <strong>Cantidad</strong> a retirar</div>
+  <div class="step"><span class="num">3</span> Opcional: Ingresa el <strong>Destino</strong> del material</div>
+  <div class="step"><span class="num">4</span> Opcional: Adjunta un <strong>comprobante</strong></div>
+  <div class="step"><span class="num">5</span> Haz clic en <strong>"Registrar Salida"</strong></div>
+
+  <div class="warning">⚠️ El sistema <strong>no permitirá</strong> registrar una salida si la cantidad solicitada supera el stock disponible.</div>
+
+  <h4>Validaciones</h4>
+  <ul>
+    <li>La cantidad debe ser mayor a 0</li>
+    <li>No puede exceder el stock actual del material</li>
+    <li>El material debe existir en el inventario</li>
+  </ul>
+</section>
+
+<!-- ===== VENTAS ===== -->
+<section id="ventas">
+  <h2>7. Punto de Venta</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/06-ventas.png" alt="Punto de Venta">
+    <div class="caption">Módulo de Punto de Venta</div>
+  </div>
+
+  <p>El módulo de ventas permite registrar ventas a clientes y generar boletas de venta.</p>
+
+  <h3>Pasos para realizar una venta</h3>
+  <div class="step"><span class="num">1</span> Ingresa el nombre del <strong>Cliente</strong> (obligatorio)</div>
+  <div class="step"><span class="num">2</span> Selecciona un <strong>Producto</strong> del menú desplegable</div>
+  <div class="step"><span class="num">3</span> Los productos seleccionados se agregan al <strong>carrito</strong></div>
+  <div class="step"><span class="num">4</span> Revisa el carrito con los productos, cantidades y precios</div>
+  <div class="step"><span class="num">5</span> Haz clic en <strong>"Finalizar Venta"</strong></div>
+
+  <h3>Características</h3>
+  <ul>
+    <li>Cálculo automático del total de la venta</li>
+    <li>Descuento del stock automático al finalizar</li>
+    <li>Generación de boleta/resumen de venta</li>
+  </ul>
+</section>
+
+<!-- ===== REPORTES ===== -->
+<section id="reportes">
+  <h2>8. Historial y Reportes</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/07-reportes.png" alt="Historial y Reportes">
+    <div class="caption">Sección de Historial con filtros y resumen</div>
+  </div>
+
+  <p>La sección de <strong>Historial</strong> permite consultar todos los movimientos registrados y generar reportes.</p>
+
+  <h3>Filtros disponibles</h3>
+  <table>
+    <tr><th>Filtro</th><th>Descripción</th></tr>
+    <tr><td>Período</td><td>Esta semana, Este mes, Todo</td></tr>
+    <tr><td>Tipo</td><td>Ingreso, Salida, Todos</td></tr>
+    <tr><td>Material</td><td>Filtrar por un material específico</td></tr>
+  </table>
+
+  <h3>Resumen del período</h3>
+  <p>La sección superior muestra estadísticas del período seleccionado:</p>
+  <ul>
+    <li>Total de movimientos</li>
+    <li>Total de ingresos y salidas</li>
+    <li>Cantidad ingresada y cantidad salida</li>
+    <li>Valor total de ventas</li>
+  </ul>
+
+  <h3>Exportar a PDF</h3>
+  <div class="step"><span class="num">1</span> Aplica los filtros deseados</div>
+  <div class="step"><span class="num">2</span> Haz clic en <strong>"Exportar PDF"</strong></div>
+  <div class="step"><span class="num">3</span> El sistema generará un archivo PDF con el reporte</div>
+
+  <h3>Tabla de movimientos</h3>
+  <p>Lista detallada de cada movimiento con:</p>
+  <ul>
+    <li>Material y Tipo (verde = ingreso, rojo = salida)</li>
+    <li>Cantidad, Fecha y hora</li>
+    <li>Proveedor/Destino</li>
+    <li>Usuario que registró</li>
+    <li>Comprobante adjunto (si aplica)</li>
+  </ul>
+</section>
+
+<!-- ===== USUARIOS ===== -->
+<section id="usuarios">
+  <h2>9. Gestión de Usuarios</h2>
+
+  <div class="screenshot">
+    <img src="imagenes/08-usuarios.png" alt="Gestión de Usuarios">
+    <div class="caption">Panel de administración de usuarios</div>
+  </div>
+
+  <div class="warning">🔒 Esta sección solo está disponible para usuarios con rol <strong>Admin</strong>.</div>
+
+  <h3>Lista de usuarios</h3>
+  <p>Muestra todos los usuarios registrados en una tabla con:</p>
+  <ul>
+    <li>ID y Usuario (nombre de inicio de sesión)</li>
+    <li>Nombre completo</li>
+    <li>Rol (Admin 👑, Almacén 📦, Ventas 💰)</li>
+    <li>Estado (Activo/Inactivo)</li>
+    <li>Acciones (Editar ✏️ / Eliminar 🗑️)</li>
+  </ul>
+
+  <h3>Crear nuevo usuario</h3>
+  <div class="step"><span class="num">1</span> Haz clic en <strong>"Nuevo Usuario"</strong></div>
+  <div class="step"><span class="num">2</span> Completa: Usuario, Contraseña, Nombre, Rol</div>
+  <div class="step"><span class="num">3</span> Haz clic en <strong>"Guardar"</strong></div>
+
+  <h3>Editar usuario</h3>
+  <div class="step"><span class="num">1</span> Haz clic en el ícono de <strong>lápiz</strong> ✏️</div>
+  <div class="step"><span class="num">2</span> Modifica los campos (deja contraseña en blanco para no cambiarla)</div>
+  <div class="step"><span class="num">3</span> Haz clic en <strong>"Guardar"</strong></div>
+
+  <h3>Eliminar usuario</h3>
+  <div class="step"><span class="num">1</span> Haz clic en el ícono de <strong>basurero</strong> 🗑️</div>
+  <div class="step"><span class="num">2</span> Confirma la eliminación</div>
+
+  <div class="warning">⚠️ No puedes eliminarte a ti mismo mientras estás logueado.</div>
+</section>
+
+<!-- ===== ROLES ===== -->
+<section id="roles">
+  <h2>10. Roles y Permisos</h2>
+
+  <table>
+    <tr><th>Función</th><th><span class="badge badge-admin">Admin</span></th><th><span class="badge badge-almacen">Almacén</span></th><th><span class="badge badge-ventas">Ventas</span></th></tr>
+    <tr><td>Ver Dashboard</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td></tr>
+    <tr><td>Ver Inventario</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td></tr>
+    <tr><td>Crear/Editar Materiales</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td><td class="badge badge-no">❌</td></tr>
+    <tr><td>Eliminar Materiales</td><td class="badge badge-yes">✅</td><td class="badge badge-no">❌</td><td class="badge badge-no">❌</td></tr>
+    <tr><td>Registrar Ingreso</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td><td class="badge badge-no">❌</td></tr>
+    <tr><td>Registrar Salida</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅*</td></tr>
+    <tr><td>Realizar Ventas</td><td class="badge badge-yes">✅</td><td class="badge badge-no">❌</td><td class="badge badge-yes">✅</td></tr>
+    <tr><td>Ver Reportes</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td><td class="badge badge-yes">✅</td></tr>
+    <tr><td>Gestionar Usuarios</td><td class="badge badge-yes">✅</td><td class="badge badge-no">❌</td><td class="badge badge-no">❌</td></tr>
+    <tr><td>Ajustar Stock</td><td class="badge badge-yes">✅</td><td class="badge badge-no">❌</td><td class="badge badge-no">❌</td></tr>
+  </table>
+  <p style="font-size:0.9em;color:#666;">* Ventas solo puede registrar salidas, no ingresos.</p>
+</section>
+
+<!-- ===== PROBLEMAS ===== -->
+<section id="problemas">
+  <h2>11. Solución de Problemas</h2>
+
+  <div class="card">
+    <h4>❌ No puedo iniciar sesión</h4>
+    <ul>
+      <li>Verifica que el usuario y contraseña sean correctos</li>
+      <li>Confirma que tu cuenta esté activa (contacta al admin)</li>
+      <li>Revisa que el servidor esté funcionando</li>
+      <li>Límite de 5 intentos por 15 minutos por seguridad</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>⚠️ Error "Stock insuficiente"</h4>
+    <ul>
+      <li>El material no tiene suficiente cantidad para la salida solicitada</li>
+      <li>Revisa el stock actual en el inventario</li>
+      <li>Registra un ingreso si es necesario</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>🌐 La página no carga</h4>
+    <ul>
+      <li>Verifica que el servidor esté corriendo</li>
+      <li>Revisa la conexión de red</li>
+      <li>Limpia la caché del navegador (Ctrl + Shift + Del)</li>
+      <li>Prueba con otro navegador</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>📎 Error al adjuntar comprobante</h4>
+    <ul>
+      <li>Formatos permitidos: PDF, JPG, PNG, GIF, WEBP</li>
+      <li>Tamaño máximo: 5MB</li>
+      <li>Verifica que el archivo no esté dañado</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <p><strong>CKJ - Sistema de Almacén</strong> v1.0.0</p>
+  <p>Documentación generada el Julio 2026</p>
+</footer>
+
+<button class="print-btn" onclick="window.print()">
+  📄 Guardar como PDF
+</button>
+
+</body>
+</html>

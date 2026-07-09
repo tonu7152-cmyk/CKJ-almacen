@@ -1,0 +1,7 @@
+node_modules/
+dist/
+backend/node_modules/
+backend/database.sqlite
+backend/uploads/
+.husky/
+.git/
