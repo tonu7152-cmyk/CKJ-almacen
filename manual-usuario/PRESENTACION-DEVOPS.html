@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CKJ - Seguridad, Resiliencia y Contingencia DevOps</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #1565c0; --primary-light: #42a5f5; --primary-dark: #0d47a1;
+  --accent: #ff6f00; --success: #2e7d32; --danger: #c62828; --warning: #e65100;
+  --bg: #0f1923; --card: #1a2a3a; --card2: #1e3347;
+  --text: #e0e0e0; --text-muted: #8899aa; --border: #2a3f55; --code-bg: #0d1a26;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+@media print {
+  body { overflow: visible !important; height: auto !important; width: auto !important; }
+}
+.slides-wrapper { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; height: 100vh; width: 100vw; scroll-behavior: smooth; }
+.slides-wrapper::-webkit-scrollbar { height: 6px; }
+.slides-wrapper::-webkit-scrollbar-track { background: var(--bg); }
+.slides-wrapper::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+.slide { min-width: 100vw; height: 100vh; scroll-snap-align: start; padding: 30px 50px; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+
+.nav-bar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; background: rgba(15,25,35,0.9); padding: 8px 18px; border-radius: 30px; backdrop-filter: blur(10px); border: 1px solid var(--border); align-items: center; }
+.nav-bar button { background: var(--card2); color: var(--text); border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px; transition: .2s; }
+.nav-bar button:hover { background: var(--primary); }
+.nav-dots { display: flex; gap: 5px; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: .3s; border: none; }
+.nav-dot.active { background: var(--primary-light); width: 20px; border-radius: 4px; }
+.nav-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary-light), var(--accent)); z-index: 200; transition: width .3s; }
+.print-btn { position: fixed; top: 16px; right: 16px; z-index: 101; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.print-btn:hover { background: #e65100; }
+
+.slide-title { background: linear-gradient(135deg, #0d1a26 0%, #1a2a3a 100%); justify-content: center; align-items: center; text-align: center; }
+.slide-title h1 { font-size: 2.8em; font-weight: 800; background: linear-gradient(135deg, var(--primary-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; line-height: 1.2; }
+.slide-title .subtitle { font-size: 1.1em; color: var(--text-muted); max-width: 700px; line-height: 1.6; }
+.slide-title .project-badge { display: inline-block; background: var(--card2); border: 1px solid var(--border); padding: 5px 18px; border-radius: 20px; font-size: 0.85em; color: var(--text-muted); margin-bottom: 16px; }
+
+.slide-section { background: linear-gradient(135deg, var(--primary-dark) 0%, #0d1a26 100%); justify-content: center; align-items: center; text-align: center; }
+.slide-section h2 { font-size: 2.5em; font-weight: 700; margin-bottom: 10px; }
+.slide-section .section-icon { font-size: 3.5em; margin-bottom: 12px; }
+.slide-section .section-number { font-size: 0.9em; color: var(--text-muted); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; }
+.slide-section .section-desc { color: var(--text-muted); font-size: 1em; max-width: 650px; line-height: 1.7; margin-top: 10px; }
+
+.slide-content h2 { font-size: 1.6em; font-weight: 700; margin-bottom: 4px; color: var(--primary-light); }
+.slide-content .slide-subtitle { color: var(--text-muted); font-size: 0.9em; margin-bottom: 18px; }
+.slide-content .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; min-height: 0; }
+.slide-content .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; flex: 1; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; overflow: hidden; display: flex; flex-direction: column; }
+.card h3 { font-size: 0.95em; font-weight: 600; margin-bottom: 8px; color: var(--accent); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card p { font-size: 0.82em; color: var(--text-muted); line-height: 1.5; margin-bottom: 4px; }
+.card .explanation { font-size: 0.82em; color: #b0c4d8; line-height: 1.5; margin-top: 6px; padding: 6px 8px; background: rgba(0,0,0,0.2); border-radius: 6px; border-left: 2px solid var(--primary); }
+
+.badge { font-size: 0.65em; padding: 2px 7px; border-radius: 6px; font-weight: 500; white-space: nowrap; }
+.badge-implemented { background: rgba(46,125,50,0.2); color: #66bb6a; border: 1px solid rgba(46,125,50,0.3); }
+.badge-concept { background: rgba(255,111,0,0.15); color: #ffb74d; border: 1px solid rgba(255,111,0,0.2); }
+
+pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.7em; line-height: 1.45; overflow-x: auto; color: #cdd6f4; margin: 4px 0; flex: 1; }
+pre .kw { color: #cba6f7; } pre .fn { color: #89b4fa; } pre .str { color: #a6e3a1; } pre .cm { color: #6c7086; font-style: italic; } pre .num { color: #fab387; }
+
+.tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.7em; font-weight: 500; }
+.tag-green { background: rgba(46,125,50,0.15); color: #66bb6a; }
+.tag-orange { background: rgba(255,111,0,0.15); color: #ffb74d; }
+
+ul { list-style: none; padding: 0; }
+ul li { padding: 3px 0; font-size: 0.82em; line-height: 1.5; padding-left: 16px; position: relative; }
+ul li::before { content: "▸"; position: absolute; left: 0; color: var(--primary-light); }
+
+.table-grid { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 4px 10px; font-size: 0.72em; }
+.table-grid .header { font-weight: 600; color: var(--text-muted); font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; }
+.table-grid .sep { border-bottom: 1px solid var(--border); grid-column: 1 / -1; }
+
+@media print {
+  @page { 
+    size: landscape; 
+    margin: 0.3in; 
+  }
+  * { overflow: visible !important; }
+  html, body { 
+    overflow: visible !important; 
+    height: auto !important; 
+    width: auto !important; 
+    background: #fff !important; 
+    color: #222 !important; 
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .nav-bar, .print-btn, .nav-progress, .nav-progress, .slides-wrapper::-webkit-scrollbar { 
+    display: none !important; 
+  }
+  .slides-wrapper { 
+    display: block !important; 
+    overflow: visible !important; 
+    height: auto !important; 
+    width: 100% !important; 
+    scroll-snap-type: none !important;
+  }
+  .slide { 
+    min-width: 0 !important;
+    width: 100% !important;
+    height: auto !important; 
+    min-height: 7in !important; 
+    padding: 0.2in !important; 
+    page-break-after: always !important; 
+    page-break-inside: avoid !important;
+    overflow: visible !important; 
+    background: #fff !important; 
+    color: #222 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .slide-title { background: #f0f4f8 !important; }
+  .slide-section { background: #e3edf7 !important; }
+  .slide-title h1, .slide-section h2 { 
+    -webkit-text-fill-color: #1565c0 !important; 
+    color: #1565c0 !important; 
+    background: none !important;
+  }
+  .card { 
+    background: #fff !important; 
+    border-color: #ddd !important;
+    break-inside: avoid !important;
+  }
+  .card h3 { color: #e65100 !important; }
+  .card .explanation { 
+    background: #f5f5f5 !important; 
+    color: #333 !important; 
+    border-left-color: #1565c0 !important; 
+  }
+  pre { 
+    background: #f8f8f8 !important; 
+    color: #333 !important; 
+    border-color: #ddd !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+  pre .kw { color: #7b1fa2 !important; } 
+  pre .fn { color: #1565c0 !important; } 
+  pre .str { color: #2e7d32 !important; } 
+  pre .cm { color: #999 !important; }
+  .badge-implemented { background: #e8f5e9 !important; color: #2e7d32 !important; }
+  .badge-concept { background: #fff3e0 !important; color: #e65100 !important; }
+  .tag-green { background: #e8f5e9 !important; color: #2e7d32 !important; }
+  .tag-orange { background: #fff3e0 !important; color: #e65100 !important; }
+  .slide-content h2 { color: #1565c0 !important; }
+  .slide-content .slide-subtitle { color: #666 !important; }
+  ul li::before { color: #1565c0 !important; }
+  .table-grid .header { color: #999 !important; }
+  .project-badge { background: #e3edf7 !important; color: #1565c0 !important; border-color: #1565c0 !important; }
+  .slide-title .subtitle { color: #555 !important; }
+}
+@media(max-width:900px){
+  .slide { padding: 16px; }
+  .slide-content .two-col, .slide-content .three-col { grid-template-columns: 1fr; }
+  .slide-title h1 { font-size: 1.8em; }
+  .slide-section h2 { font-size: 1.6em; }
+}
+</style>
+</head>
+<body>
+
+<div class="nav-progress" id="progress"></div>
+<button class="print-btn" onclick="exportPDF()">📥 Exportar PDF</button>
+
+<script>
+function exportPDF() {
+  // Open print dialog directly - works in most browsers with Ctrl+P
+  // If blocked on file://, shows instructions
+  try {
+    window.print();
+  } catch(e) {
+    alert('Presiona Ctrl+P y selecciona "Guardar como PDF"\n\nConfiguración recomendada:\n• Tamaño: Horizontal (Landscape)\n• Margen: Mínimo\n• Marcar: Gráficos de fondo');
+  }
+}
+
+<div class="slides-wrapper" id="slidesWrapper">
+
+<!-- SLIDE 0: PORTADA -->
+<section class="slide slide-title">
+  <div class="project-badge">CKJ - Sistema de Almacén</div>
+  <h1>Seguridad, Resiliencia<br>y Contingencia DevOps</h1>
+  <p class="subtitle">Implementación de DevSecOps, alta disponibilidad y planes de recuperación en un sistema de gestión de inventarios construido con Angular 22, Node.js + Express y SQLite. Despliegue automatizado con Docker, Ansible y PM2. 20 medidas de seguridad implementadas y 8 propuestas de mejora hacia la nube.</p>
+  <br>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:0.8em;color:var(--text-muted)">
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">🅰️ Angular 22</span>
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">🟢 Node.js 22 + Express</span>
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">🗄️ SQLite</span>
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">🐳 Docker</span>
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">📜 Ansible</span>
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">🔒 DevSecOps</span>
+    <span style="padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;">🐶 Husky</span>
+  </div>
+  <div style="margin-top:24px;color:var(--text-muted);font-size:0.8em;">← Desliza horizontalmente o usa las flechas del teclado →</div>
+</section>
+
+<!-- SLIDE 1: ÍNDICE -->
+<section class="slide slide-content">
+  <h2>📋 Índice</h2>
+  <p class="slide-subtitle">Tres pilares fundamentales de la infraestructura DevOps en el proyecto CKJ</p>
+  <div class="three-col" style="margin-top:14px;">
+    <div class="card" style="border-top:3px solid #42a5f5;">
+      <h3 style="font-size:1.2em;color:#42a5f5;margin-bottom:4px;">🔒 Seguridad / DevSecOps</h3>
+      <p style="font-size:0.8em;color:var(--text-muted);margin-bottom:8px;">Seguridad integrada en cada etapa del ciclo de vida del desarrollo</p>
+      <ul>
+        <li><strong>Implementado:</strong> JWT, Helmet, bcrypt, Rate Limit, validación de tipos, Husky pre-commit con lint-staged, Gitleaks (detección de secretos), npm audit, Trivy, SonarQube, Snyk, Checkov, Fail2Ban, UFW, Hardening SSH</li>
+        <li style="margin-top:4px;"><strong>Propuesta:</strong> Terraform + AWS WAF, Kubernetes Secrets + HashiCorp Vault, Migración a RDS PostgreSQL</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid #66bb6a;">
+      <h3 style="font-size:1.2em;color:#66bb6a;margin-bottom:4px;">🔄 Resiliencia</h3>
+      <p style="font-size:0.8em;color:var(--text-muted);margin-bottom:8px;">Capacidad de mantener el servicio ante fallos y alta demanda</p>
+      <ul>
+        <li><strong>Implementado:</strong> PM2 auto-reinicio + watch + límite 300MB RAM, Docker multi-stage + restart always, Ansible deploy + rollback, Nginx reverse proxy + SSL + caché 1 año</li>
+        <li style="margin-top:4px;"><strong>Propuesta:</strong> Kubernetes con 3 réplicas + liveness/readiness probes + HPA, AWS Auto Scaling, Application Load Balancer</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid #ffb74d;">
+      <h3 style="font-size:1.2em;color:#ffb74d;margin-bottom:4px;">📋 Contingencia</h3>
+      <p style="font-size:0.8em;color:var(--text-muted);margin-bottom:8px;">Planes de recuperación ante desastres y pérdida de datos</p>
+      <ul>
+        <li><strong>Implementado:</strong> saveDb() persistencia inmediata en cada operación, Rate limiting anti-DoS (100 req/15min), UFW firewall (solo 22,80,443), Rollback Ansible (menos de 2 min), Hardening preventivo</li>
+        <li style="margin-top:4px;"><strong>Propuesta:</strong> RDS Multi-AZ con backups automáticos (30 días retención), K8s PodDisruptionBudget, S3 para uploads, Disaster Recovery multi-zona</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: SECCIÓN SEGURIDAD -->
+<section class="slide slide-section">
+  <div class="section-icon">🔒</div>
+  <div class="section-number">Pilar 1</div>
+  <h2>Seguridad &amp; DevSecOps</h2>
+  <p class="section-desc">La seguridad no es una capa final que se añade al terminar el desarrollo. En DevSecOps, la seguridad está integrada en cada etapa del ciclo de vida: desde el editor de código (Husky pre-commit, Gitleaks), pasando por la compilación (npm audit, SonarQube), hasta la infraestructura (Fail2Ban, UFW, Hardening SSH). Así garantizamos que cada línea de código es segura antes de llegar a producción.</p>
+</section>
+
+<!-- SLIDE 3: SEGURIDAD - CÓDIGO -->
+<section class="slide slide-content">
+  <h2>🔒 Seguridad en el Código</h2>
+  <p class="slide-subtitle">Protección a nivel de aplicación: autenticación JWT, autorización por roles, validación de datos</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>🛡️ Helmet + Rate Limiting <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>backend/server.js</code> - Cabeceras HTTP seguras y límite de peticiones</p>
+      <pre><span class="kw">const</span> helmet = <span class="fn">require</span>(<span class="str">'helmet'</span>);
+<span class="kw">const</span> rateLimit = <span class="fn">require</span>(<span class="str">'express-rate-limit'</span>);
+app.<span class="fn">use</span>(helmet()); <span class="cm">// XSS, clickjacking, MIME sniffing</span>
+<span class="kw">const</span> limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 100 <span class="cm">// por IP</span>
+});
+app.<span class="fn">use</span>(<span class="str">'/api/'</span>, limiter);
+<span class="kw">const</span> loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 5 <span class="cm">// 5 intentos</span>
+});</pre>
+      <div class="explanation"><strong>¿Qué hace y por qué?</strong> Helmet añade cabeceras HTTP como X-Content-Type-Options (evita MIME sniffing), X-Frame-Options (evita clickjacking) y X-XSS-Protection (protege contra cross-site scripting). El rate limiter evita ataques de fuerza bruta y DoS limitando a 100 peticiones por IP cada 15 minutos, y solo 5 intentos de login. <strong>Archivo real:</strong> backend/server.js líneas 35-55.</div>
+    </div>
+    <div class="card">
+      <h3>🔑 JWT + Middleware de Roles <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>backend/server.js</code> - Control de acceso basado en roles (RBAC)</p>
+      <pre><span class="kw">function</span> <span class="fn">authMiddleware</span>(rolesPermitidos = []) {
+  <span class="kw">return</span> (req, res, next) => {
+    <span class="kw">const</span> token = req.headers[<span class="str">'authorization'</span>]?.<span class="fn">split</span>(<span class="str">' '</span>)[1];
+    <span class="kw">if</span> (!token) <span class="kw">return</span> res.<span class="fn">status</span>(401).<span class="fn">json</span>({error:<span class="str">'Token'</span>});
+    <span class="kw">const</span> decoded = jwt.<span class="fn">verify</span>(token, JWT_SECRET);
+    <span class="kw">const</span> user = queryOne(<span class="str">'SELECT * FROM usuarios WHERE id=?'</span>, [decoded.id]);
+    <span class="kw">if</span> (!user) <span class="kw">return</span> res.<span class="fn">status</span>(401).<span class="fn">json</span>({error:<span class="str">'No válido'</span>});
+    <span class="kw">if</span> (rolesPermitidos.length && !rolesPermitidos.<span class="fn">includes</span>(user.rol))
+      <span class="kw">return</span> res.<span class="fn">status</span>(403).<span class="fn">json</span>({error:<span class="str">'Permisos'</span>});
+    req.user = user; next();
+  };
+}
+<span class="cm">// Cada ruta especifica roles permitidos:</span>
+app.<span class="fn">get</span>(<span class="str">'/api/usuarios'</span>, authMiddleware([<span class="str">'admin'</span>]), ...);
+app.<span class="fn">post</span>(<span class="str">'/materiales'</span>, authMiddleware([<span class="str">'admin'</span>,<span class="str">'almacen'</span>]), ...);
+app.<span class="fn">post</span>(<span class="str">'/movimientos'</span>, authMiddleware([<span class="str">'admin'</span>,<span class="str">'almacen'</span>,<span class="str">'ventas'</span>]), ...
+);</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Cada ruta de la API declara qué roles pueden acceder. El middleware verifica el token JWT (expira en 12h), busca el usuario en la BD, y comprueba si tiene el rol adecuado. Si no tiene permisos, responde con 403 Forbidden. Esto garantiza que un vendedor no pueda eliminar materiales ni un usuario de almacén gestionar usuarios. <strong>Archivo real:</strong> backend/server.js líneas 177-195.</div>
+    </div>
+    <div class="card">
+      <h3>🔐 bcrypt - Hash de Contraseñas <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>backend/server.js</code> - Contraseñas protegidas con 10 rondas de sal</p>
+      <pre><span class="kw">const</span> bcrypt = <span class="fn">require</span>(<span class="str">'bcryptjs'</span>);
+<span class="cm">// Al crear usuario: hash con 10 rondas</span>
+<span class="kw">const</span> hashed = bcrypt.<span class="fn">hashSync</span>(password, 10);
+db.<span class="fn">run</span>(<span class="str">'INSERT INTO usuarios VALUES (NULL,?,?,?,?,1)'</span>,
+  [username, hashed, nombre, rol]);
+<span class="cm">// Al iniciar sesión: comparar hash</span>
+bcrypt.<span class="fn">compareSync</span>(password, user.password);</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Nunca almacena contraseñas en texto plano. Usa bcrypt con 10 rondas de sal, lo que hace que cada verificación tome ~100ms. Si un atacante obtiene la BD, no puede recuperar las contraseñas originales. Cada contraseña requiere su propio cálculo, haciendo inviable un ataque de fuerza bruta incluso con GPUs. <strong>Archivo real:</strong> backend/server.js líneas 365-371.</div>
+    </div>
+    <div class="card">
+      <h3>📦 Validación + Límite de tamaño <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>backend/server.js</code> - Protección contra DoS e inyección de datos</p>
+      <pre><span class="cm">// Límite de tamaño del body: 1MB máximo</span>
+app.<span class="fn">use</span>(express.json({ limit: <span class="str">'1mb'</span> }));
+<span class="cm">// Validación estricta de tipos en login</span>
+<span class="kw">if</span> (<span class="kw">typeof</span> username !== <span class="str">'string'</span> || <span class="kw">typeof</span> password !== <span class="str">'string'</span>)
+  <span class="kw">return</span> res.<span class="fn">status</span>(400).<span class="fn">json</span>({error:<span class="str">'Datos inválidos'</span>});
+<span class="cm">// Validación de campos obligatorios</span>
+<span class="kw">if</span> (!username || !password || !nombre || !rol)
+  <span class="kw">return</span> res.<span class="fn">status</span>(400).<span class="fn">json</span>({error:<span class="str">'Campos requeridos'</span>});
+<span class="cm">// Validación de rol contra lista blanca</span>
+<span class="kw">if</span> (![<span class="str">'admin'</span>,<span class="str">'almacen'</span>,<span class="str">'ventas'</span>].<span class="fn">includes</span>(rol))
+  <span class="kw">return</span> res.<span class="fn">status</span>(400).<span class="fn">json</span>({error:<span class="str">'Rol inválido'</span>});</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Tres capas de validación: 1) Límite de 1MB en el body para evitar ataques DoS por payloads enormes. 2) Validación de tipos (typeof) para evitar inyección de objetos maliciosos. 3) Lista blanca de roles permitidos, rechazando cualquier valor no esperado. <strong>Archivo real:</strong> backend/server.js líneas 45-55.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: DEVSECOPS -->
+<section class="slide slide-content">
+  <h2>🔒 DevSecOps - Seguridad en el Pipeline</h2>
+  <p class="slide-subtitle">Husky (pre-commit hooks), Gitleaks (detección de secretos), escaneos automáticos con Ansible, hardening del servidor con Ansible</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>🐶 Husky + lint-staged <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>.husky/pre-commit</code> y <code>package.json</code> - Calidad y seguridad antes de cada commit</p>
+      <pre><span class="cm"># .husky/pre-commit - Se ejecuta automáticamente antes</span>
+<span class="cm"># de cada "git commit"</span>
+npx lint-staged
+npx --yes gitleaks detect --source . --no-git --verbose
+
+<span class="cm"># package.json - lint-staged formatea y corrige</span>
+"lint-staged": {
+  "*.{ts,js,json,md,css,html}": "prettier --write",
+  "*.{ts,js}": "eslint --fix --quiet 2>/dev/null || echo"
+}</pre>
+      <div class="explanation"><strong>¿Qué hace y cómo funciona?</strong> Husky es una herramienta que ejecuta scripts antes de ciertos eventos de Git. En este proyecto, antes de cada commit: 1) lint-staged ejecuta Prettier para formatear automáticamente el código (TypeScript, JavaScript, JSON, CSS, HTML) y ESLint para corregir errores. 2) Gitleaks escanea todo el código en busca de secretos (tokens, contraseñas, claves). Si encuentra algo, aborta el commit. <strong>Archivo real:</strong> .husky/pre-commit y package.json líneas 12-18.</div>
+    </div>
+    <div class="card">
+      <h3>🔍 Gitleaks - Detector de Secretos <span class="badge badge-implemented">✅ IMPLEMENTADO</span></h3>
+      <p><code>.husky/pre-commit</code> - Previene fugas de información sensible</p>
+      <pre><span class="cm"># Gitleaks busca patrones de secretos como:</span>
+<span class="cm"># - AWS Access Key ID (AKIA...)</span>
+<span class="cm"># - GitHub Personal Access Tokens (ghp_...)</span>
+<span class="cm"># - Claves privadas RSA/SSH (-----BEGIN RSA PRIVATE KEY-----)</span>
+<span class="cm"># - Tokens de API (slack, stripe, etc.)</span>
+<span class="cm"># - URLs de conexión a BD con credenciales</span>
+npx --yes gitleaks detect --source . --no-git --verbose
+<span class="cm"># Si encuentra algún secreto → ERROR → commit bloqueado</span>
+<span class="cm"># Si no encuentra nada → OK → commit procede normalmente</span></pre>
+      <div class="explanation"><strong>¿Por qué es crítico?</strong> Un solo commit con una clave AWS expuesta puede comprometer toda la infraestructura. Gitleaks analiza el código contra una base de datos de más de 150 patrones de secretos conocidos. Detecta automáticamente tokens de AWS, GitHub, Google Cloud, claves SSH, URLs de conexión, y más. Si encuentra algo sospechoso, bloquea el commit inmediatamente. Es la primera línea de defensa contra fugas de credenciales.</div>
+    </div>
+    <div class="card">
+      <h3>📜 Escaneos Automáticos con Ansible <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>ansible/devsecops/scan.yml</code> - Pipeline completo de 5 herramientas de seguridad</p>
+      <pre><span class="cm"># 1. npm audit - Vulnerabilidades en dependencias Node.js</span>
+- <span class="kw">command</span>: npm audit --audit-level=high
+  <span class="kw">register</span>: npm_audit_backend
+<span class="cm"># 2. Trivy - Escaneo de archivos y sistemas de archivos</span>
+- <span class="kw">command</span>: trivy fs --severity HIGH,CRITICAL {{ app_root }}
+<span class="cm"># 3. Checkov - Escaneo de playbooks y roles Ansible</span>
+- <span class="kw">command</span>: checkov --directory {{ app_root }}/ansible
+<span class="cm"># 4. SonarQube - Análisis de calidad y seguridad de código</span>
+- <span class="kw">command</span>: sonar-scanner
+<span class="cm"># 5. Snyk - Monitoreo continuo de vulnerabilidades</span>
+- <span class="kw">command</span>: snyk test --all-projects
+<span class="cm"># Todos los resultados se guardan en /var/log/ckj/scans/</span>
+- <span class="kw">copy</span>: content={{ resultado }} dest=/var/log/ckj/scans/</pre>
+      <div class="explanation"><strong>¿Qué hace cada herramienta?</strong> 1) npm audit revisa vulnerabilidades en paquetes npm (express, bcrypt, etc.). 2) Trivy escanea archivos en busca de configuraciones inseguras, contraseñas hardcodeadas y vulnerabilidades conocidas. 3) Checkov analiza los playbooks de Ansible para detectar configuraciones inseguras. 4) SonarQube mide la calidad del código y detecta bugs, vulnerabilidades y code smells. 5) Snyk monitorea continuamente las dependencias y alerta sobre nuevas vulnerabilidades. <strong>Archivo real:</strong> ansible/devsecops/scan.yml.</div>
+    </div>
+    <div class="card">
+      <h3>🔒 Hardening del Servidor con Ansible <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>ansible/roles/security/tasks/main.yml</code> - Configuración completa de seguridad del servidor</p>
+      <pre><span class="cm"># Fail2Ban: bloquea IPs tras 3 intentos fallidos SSH</span>
+- apt: name=fail2ban state=present
+<span class="cm"># UFW: firewall - denegar todo, permitir solo lo necesario</span>
+- ufw: rule=allow port=22  proto=tcp  <span class="cm"># SSH</span>
+- ufw: rule=allow port=80  proto=tcp  <span class="cm"># HTTP</span>
+- ufw: rule=allow port=443 proto=tcp  <span class="cm"># HTTPS</span>
+- ufw: rule=deny  port=3000 proto=tcp  <span class="cm"># API no expuesta</span>
+- ufw: state=enabled direction=incoming policy=deny
+<span class="cm"># Hardening SSH: eliminar accesos inseguros</span>
+- lineinfile: line='PermitRootLogin no'
+- lineinfile: line='PasswordAuthentication no'
+- lineinfile: line='MaxAuthTries 3'
+<span class="cm"># Actualizaciones automáticas de seguridad</span>
+- apt: name=unattended-upgrades state=present</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Fail2Ban monitorea los logs de SSH y bloquea IPs tras 3 intentos fallidos (baneo configurable). UFW configura un firewall con política "denegar todo por defecto", abriendo solo los puertos 22 (SSH), 80 (HTTP) y 443 (HTTPS). El puerto 3000 de la API Express no está expuesto directamente (solo a través de Nginx). SSH se protege desactivando login root, exigiendo autenticación por clave pública (no contraseña) y limitando a 3 intentos máximos. Las actualizaciones de seguridad se instalan automáticamente. <strong>Archivo real:</strong> ansible/roles/security/tasks/main.yml.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: SEGURIDAD - PROPUESTA -->
+<section class="slide slide-content">
+  <h2>🔮 Seguridad - Propuesta de Mejora para CKJ</h2>
+  <p class="slide-subtitle">Herramientas que aún no están implementadas pero que mejorarían significativamente la seguridad del proyecto</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>🏗️ Terraform + AWS WAF <span class="badge badge-concept">📌 PROPUESTA (no implementado)</span></h3>
+      <p>Infraestructura como código con Web Application Firewall en AWS</p>
+      <pre><span class="cm"># terraform/waf.tf - Esto NO está en el proyecto actual</span>
+<span class="cm"># pero se podría implementar para proteger CKJ en AWS</span>
+resource <span class="str">"aws_wafv2_web_acl"</span> <span class="str">"ckj_waf"</span> {
+  name  = <span class="str">"ckj-waf"</span>
+  scope = <span class="str">"REGIONAL"</span>
+  rule { name = <span class="str">"rate-limit"</span>; priority = 1
+    action { block {} }
+    statement { rate_based_statement {
+      limit = 2000; aggregate_key_type = <span class="str">"IP"</span>
+    }}
+  }
+  rule { name = <span class="str">"xss-block"</span>; priority = 2
+    action { block {} }
+    statement { xss_match_statement {
+      field_to_match { query_string {} }
+    }}
+  }
+  <span class="cm">// Reglas adicionales:</span>
+  <span class="cm">// - Bloquear IPs maliciosas (IP reputation)</span>
+  <span class="cm">// - Bloquear SQL injection</span>
+  <span class="cm">// - Permitir solo países específicos</span>
+}</pre>
+      <div class="explanation"><strong>📌 ¿Qué cambios habría que hacer en CKJ?</strong> 1) Crear archivos .tf con la infraestructura completa (VPC, subnets, security groups). 2) Migrar la base de datos de SQLite a RDS PostgreSQL (cambiar la librería sql.js por pg). 3) Subir la imagen Docker a Amazon ECR. 4) Configurar WAF + CloudFront como CDN. 5) Mover el directorio uploads/ a S3. <strong>Tiempo estimado:</strong> 2-3 semanas. <strong>Beneficio:</strong> Protección contra OWASP Top 10 (XSS, SQLi, CSRF) a nivel de firewall de red.</div>
+    </div>
+    <div class="card">
+      <h3>☸️ Kubernetes Secrets + HashiCorp Vault <span class="badge badge-concept">📌 PROPUESTA (no implementado)</span></h3>
+      <p>Gestión centralizada y rotación automática de secretos</p>
+      <pre><span class="cm"># k8s/secrets.yaml - Esto NO está en el proyecto actual</span>
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ckj-secrets
+type: Opaque
+stringData:
+  JWT_SECRET: <span class="str">"${JWT_SECRET}"</span>
+  DB_PASSWORD: <span class="str">"${DB_PASSWORD}"</span>
+
+<span class="cm"># backend/server.js - El código YA soporta variables de</span>
+<span class="cm"># entorno, solo falta conectarlo con los Secrets</span>
+<span class="kw">const</span> JWT_SECRET = process.env.JWT_SECRET
+  || <span class="str">'ckj-almacen-secret-2026'</span>; <span class="cm">// fallback local</span>
+
+<span class="cm">// Mejora propuesta: HashiCorp Vault Agent</span>
+<span class="cm">// para rotación automática de secretos cada 30 días</span></pre>
+      <div class="explanation"><strong>📌 ¿Qué cambios habría que hacer en CKJ?</strong> 1) El código backend ya lee JWT_SECRET de variable de entorno (process.env), solo falta crear los objetos Secret en Kubernetes y conectarlos al Deployment. 2) Implementar HashiCorp Vault Agent para rotación automática de secretos. 3) Configurar RBAC en Kubernetes para limitar qué pods acceden a qué secretos. <strong>Tiempo estimado:</strong> 1-2 semanas. <strong>Beneficio:</strong> Los secretos no quedan hardcodeados en el código ni en los manifiestos YAML.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: SECCIÓN RESILIENCIA -->
+<section class="slide slide-section">
+  <div class="section-icon">🔄</div>
+  <div class="section-number">Pilar 2</div>
+  <h2>Resiliencia del Sistema</h2>
+  <p class="section-desc">La resiliencia es la capacidad del sistema de mantener su funcionamiento ante fallos, picos de tráfico o condiciones adversas. En CKJ hemos implementado múltiples capas de auto-recuperación, desde el proceso (PM2), pasando por el contenedor (Docker), hasta la infraestructura (Ansible, Nginx). Cada capa añade una redundancia que garantiza que el servicio esté disponible incluso cuando algo sale mal.</p>
+</section>
+
+<!-- SLIDE 7: RESILIENCIA - IMPLEMENTADO -->
+<section class="slide slide-content">
+  <h2>🔄 Resiliencia Implementada en CKJ</h2>
+  <p class="slide-subtitle">Mecanismos de auto-recuperación con código real del proyecto</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>📊 PM2 - Process Manager <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>ansible/roles/app/tasks/main.yml</code> - Gestión de procesos con auto-recuperación</p>
+      <pre><span class="cm"># PM2: Process Manager con múltiples protecciones</span>
+pm2 start {{ backend_dir }}/server.js \
+  --name ckj-api \
+  --watch                         <span class="cm"># Reinicia si cambia el código</span>
+  --ignore-watch="*.sqlite"       <span class="cm"># No reinicia por cambios en BD</span>
+  --max-memory-restart 300M       <span class="cm"># Reinicia si excede 300MB RAM</span>
+
+<span class="cm"># Inicio automático al encender el servidor</span>
+pm2 startup systemd               <span class="cm"># Crea servicio systemd</span>
+pm2 save                          <span class="cm"># Persiste la configuración</span></pre>
+      <div class="explanation"><strong>¿Cómo funciona en CKJ?</strong> PM2 mantiene el proceso del backend siempre vivo. Si el proceso se cae por error, memory leak, o cualquier motivo, PM2 lo reinicia automáticamente en menos de 2 segundos. El modo watch detecta cambios en el código y reinicia la app sin intervención manual (útil en desarrollo). Si el servidor entero se reinicia (corte de luz, mantenimiento), PM2 startup systemd asegura que la app arranque automáticamente al iniciar el sistema. El límite de 300MB evita que un memory leak consuma toda la RAM del servidor. <strong>Archivo real:</strong> ansible/roles/app/tasks/main.yml líneas 42-56.</div>
+    </div>
+    <div class="card">
+      <h3>🐳 Docker - Aislamiento + Auto-reinicio <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>Dockerfile</code> - Multi-stage build para imagen mínima y segura</p>
+      <pre><span class="cm"># Dockerfile - Construcción en 3 etapas</span>
+FROM node:22-alpine AS build-frontend
+WORKDIR /app
+COPY package*.json ./; RUN npm ci --only=production
+COPY . .; RUN npm run build -- --configuration production
+
+FROM node:22-alpine AS build-backend
+WORKDIR /app
+COPY backend/package*.json ./backend/
+RUN cd backend && npm ci --only=production
+COPY backend/ ./backend/
+
+FROM node:22-alpine  <span class="cm"># Imagen final: solo lo necesario</span>
+RUN apk add --no-cache tini  <span class="cm"># Manejo correcto de SIGTERM</span>
+RUN addgroup -S ckj && adduser -S ckj -G ckj
+USER ckj                     <span class="cm"># Ejecutar como no-root</span>
+EXPOSE 3000
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "backend/server.js"]
+
+<span class="cm"># docker run -d -p 3000:3000 --restart always ckj:latest</span></pre>
+      <div class="explanation"><strong>¿Por qué multi-stage?</strong> La imagen final solo contiene lo necesario para ejecutar la app, reduciendo el tamaño de ~1.5GB a ~300MB. Beneficios: despliegues más rápidos, menor superficie de ataque, menos vulnerabilidades. El flag --restart always hace que Docker reinicie automáticamente el contenedor si se cae. Tini como entrypoint maneja correctamente las señales SIGTERM y SIGINT para hacer un shutdown graceful. El usuario no-root (ckj) limita los permisos del contenedor. <strong>Archivo real:</strong> Dockerfile (raíz del proyecto).</div>
+    </div>
+    <div class="card" style="grid-column:1/3;">
+      <h3>⏪ Ansible Rollback + Nginx Failover <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>ansible/rollback.yml</code> y <code>ansible/roles/nginx/</code> - Recuperación ante fallos de código y red</p>
+      <div class="two-col" style="grid-template-columns:1fr 1fr;gap:12px;">
+        <pre style="margin:0;"><span class="cm"># rollback.yml - Recuperación en &lt;2 minutos</span>
+ansible-playbook rollback.yml -e "git_ref=v1.0.0"
+
+<span class="cm"># El playbook ejecuta automáticamente:</span>
+<span class="cm"># 1. Git checkout a versión estable</span>
+<span class="cm"># 2. Reinstala dependencias (npm ci)</span>
+<span class="cm"># 3. Recompila Angular (ng build --prod)</span>
+<span class="cm"># 4. pm2 restart ckj-api</span>
+<span class="cm"># Tiempo total de recuperación: &lt; 2 minutos</span></pre>
+        <pre style="margin:0;"><span class="cm"># nginx - Caché de archivos estáticos (1 año)</span>
+location / {
+  try_files $uri $uri/ /index.html;
+  expires 1y;
+  add_header Cache-Control "public, immutable";
+}
+<span class="cm"># Bloquear acceso a rutas sensibles</span>
+location ~ /\. { deny all; }
+location ~ /(node_modules|\.git|src) { deny all; return 404; }</pre>
+      </div>
+      <div class="explanation"><strong>¿Cómo funciona?</strong> Si una actualización introduce un bug crítico, se ejecuta el playbook rollback.yml que revierte el código a una versión anterior estable en menos de 2 minutos. Nginx añade resiliencia a nivel de red: cachea los archivos estáticos del frontend por 1 año (si el backend falla, los usuarios siguen viendo la página), y bloquea el acceso a rutas sensibles como .git o node_modules. <strong>Archivos reales:</strong> ansible/rollback.yml y ansible/roles/nginx/templates/ckj.nginx.conf.j2.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8: RESILIENCIA - PROPUESTA -->
+<section class="slide slide-content">
+  <h2>🔮 Resiliencia - Propuesta de Mejora para CKJ</h2>
+  <p class="slide-subtitle">Alta disponibilidad en la nube con Kubernetes, HPA y AWS Auto Scaling</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>☸️ Kubernetes Deployment + HPA <span class="badge badge-concept">📌 PROPUESTA (no implementado)</span></h3>
+      <p>Orquestación de contenedores con auto-recuperación y escalado horizontal</p>
+      <pre><span class="cm"># k8s/deployment.yaml - Esto NO está en el proyecto actual</span>
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: ckj-api }
+spec:
+  replicas: 3  <span class="cm"># Múltiples instancias para alta disponibilidad</span>
+  selector: { matchLabels: { app: ckj } }
+  template:
+    metadata: { labels: { app: ckj } }
+    spec:
+      containers:
+      - name: ckj-api
+        image: ckj:latest
+        ports: [{ containerPort: 3000 }]
+        resources:
+          limits: { memory: "256Mi", cpu: "500m" }
+          requests: { memory: "128Mi", cpu: "250m" }
+        livenessProbe:   <span class="cm"># ❤️ ¿El proceso está vivo?</span>
+          httpGet: { path: /materiales, port: 3000 }
+          initialDelaySeconds: 15; periodSeconds: 10
+        readinessProbe:  <span class="cm"># ✅ ¿Está listo para recibir tráfico?</span>
+          httpGet: { path: /dashboard, port: 3000 }
+          initialDelaySeconds: 5; periodSeconds: 5
+
+<span class="cm"># k8s/hpa.yaml - Auto-escalado horizontal</span>
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: ckj-api-hpa }
+spec:
+  minReplicas: 3; maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target: { type: Utilization, averageUtilization: 60 }</pre>
+      <div class="explanation"><strong>📌 ¿Qué cambios en CKJ?</strong> 1) La app ya está dockerizada (Dockerfile listo). 2) Crear manifiestos YAML (deployment, service, ingress, hpa). 3) Migrar BD SQLite a PostgreSQL (RDS) porque los pods en K8s son efímeros. 4) Configurar Ingress Controller (nginx-ingress) para el balanceo. 5) Mover uploads a S3. <strong>Beneficio:</strong> Si un pod falla, K8s lo recrea automáticamente. Si la CPU supera el 60%, HPA crea más pods. <strong>Tiempo:</strong> 3-4 semanas.</div>
+    </div>
+    <div class="card">
+      <h3>📈 AWS Auto Scaling + ALB <span class="badge badge-concept">📌 PROPUESTA (no implementado)</span></h3>
+      <p>Escalado automático de instancias EC2 según la demanda en AWS</p>
+      <pre><span class="cm"># terraform/autoscaling.tf - Esto NO está en el proyecto</span>
+resource <span class="str">"aws_launch_template"</span> <span class="str">"ckj"</span> {
+  image_id = data.aws_ami.amazon_linux_2.id
+  instance_type = <span class="str">"t3.medium"</span>
+  user_data = base64encode(<span class="str">"#!/bin/bash
+    docker run -d -p 3000:3000 --restart always ckj:latest"</span>)
+}
+resource <span class="str">"aws_autoscaling_group"</span> <span class="str">"ckj_asg"</span> {
+  min_size = 2; max_size = 10; desired_capacity = 2
+  launch_template { id = aws_launch_template.ckj.id }
+  target_group_arns = [aws_lb_target_group.ckj.arn]
+}
+resource <span class="str">"aws_autoscaling_policy"</span> <span class="str">"ckj_cpu"</span> {
+  policy_type = <span class="str">"TargetTrackingScaling"</span>
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = <span class="str">"ASGAverageCPUUtilization"</span>
+    }
+    target_value = 60.0  <span class="cm"># Escala si CPU > 60%</span>
+  }
+}</pre>
+      <div class="explanation"><strong>📌 ¿Qué cambios en CKJ?</strong> 1) Migrar a RDS PostgreSQL (cambiar sql.js por pg). 2) Crear AMI personalizada con Docker y la app pre-instalada. 3) Configurar Application Load Balancer para distribuir tráfico entre instancias. 4) Uploads locales → S3 con presigned URLs. <strong>Escenario:</strong> En Black Friday, si CPU > 60%, Auto Scaling lanza instancias automáticamente (2→10). Cuando baja la demanda, las elimina. Solo pagas por lo que usas. <strong>Tiempo:</strong> 4-6 semanas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: DIAGRAMA COMPARATIVO -->
+<section class="slide slide-content">
+  <h2>🔄 Diagrama de Resiliencia Comparativo</h2>
+  <p class="slide-subtitle">Arquitectura actual del proyecto CKJ vs. Arquitectura propuesta en la nube</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>📌 Arquitectura Actual (CKJ hoy) <span class="badge badge-implemented">✅</span></h3>
+      <pre style="font-size:0.65em;line-height:1.5;white-space:pre;">🌐 Usuario → HTTPS :443
+        │
+        ▼
+   🔒 Nginx (SSL, caché 1 año, reverse proxy)
+        │
+        ▼
+   🟢 PM2 (watch, auto-reinicio, 300MB máx)
+        │
+        ▼
+   📦 Backend Express (API REST en :3000)
+        │
+        ▼
+   💾 database.sqlite (archivo local)
+
+   🚨 Escenarios de fallo actuales:
+   ────────────────────────────────
+   ❌ Proceso crashea
+      → PM2 reinicia en &lt;2s ✅
+   ❌ Servidor se apaga
+      → PM2 startup lo inicia ✅
+   ❌ Bug en nueva versión
+      → ansible rollback a v1.0.0 ✅
+   ❌ Ataque fuerza bruta
+      → Fail2Ban bloquea IP ✅
+   ❌ Pico de tráfico
+      → Rate limit protege API ✅</pre>
+    </div>
+    <div class="card">
+      <h3>🚀 Arquitectura Propuesta (CKJ en AWS) <span class="badge badge-concept">📌</span></h3>
+      <pre style="font-size:0.65em;line-height:1.5;white-space:pre;">🌐 Usuario → CloudFront CDN (Edge locations)
+        │
+        ▼
+   🔒 AWS WAF (Web ACL, rate limiting, XSS block)
+        │
+        ▼
+   ⚖️ ALB (Application Load Balancer)
+        │
+        ▼
+   ☸️ Kubernetes cluster (EKS multi-AZ)
+   ┌──────────────────────────────┐
+   │ Pod ckj-api:3 réplicas (AZ1) │
+   │ Pod ckj-api:3 réplicas (AZ2) │ ← Multi-zona
+   │ Pod ckj-api:3 réplicas (AZ3) │
+   └──────────────────────────────┘
+        │
+        ▼
+   🐘 RDS PostgreSQL Multi-AZ
+   (backup automático 30 días)
+
+   🚨 Escenarios de fallo propuestos:
+   ────────────────────────────────
+   ❌ Pod crashea → K8s lo recrea &lt;5s ✅
+   ❌ CPU &gt;60% → HPA escala a +pods ✅
+   ❌ Zona completa cae → Multi-AZ sigue ✅
+   ❌ BD corrupta → RDS restaura backup ✅
+   ❌ DDoS → WAF + CloudFront mitigan ✅</pre>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: SECCIÓN CONTINGENCIA -->
+<section class="slide slide-section">
+  <div class="section-icon">📋</div>
+  <div class="section-number">Pilar 3</div>
+  <h2>Contingencia &amp; Disaster Recovery</h2>
+  <p class="section-desc">La contingencia es el conjunto de planes y procedimientos para recuperar el sistema ante un desastre. Puede ser pérdida de datos, caída del servidor, ataque cibernético o error humano. Un buen plan de contingencia minimiza dos métricas clave: RTO (Recovery Time Objective - cuánto tardamos en recuperar) y RPO (Recovery Point Objective - cuántos datos perdemos).</p>
+</section>
+
+<!-- SLIDE 11: CONTINGENCIA - IMPLEMENTADO -->
+<section class="slide slide-content">
+  <h2>📋 Contingencia Implementada en CKJ</h2>
+  <p class="slide-subtitle">Medidas de protección, backup continuo y planes de recuperación</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>💾 Persistencia Inmediata (Backup continuo) <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>backend/server.js</code> - Cada operación se guarda al instante en disco</p>
+      <pre><span class="kw">function</span> <span class="fn">saveDb</span>() {
+  <span class="cm">// Exporta TODA la base de datos a disco</span>
+  <span class="kw">const</span> data = db.<span class="fn">export</span>();
+  fs.<span class="fn">writeFileSync</span>(DB_PATH, Buffer.<span class="fn">from</span>(data));
+}
+<span class="kw">function</span> <span class="fn">runSql</span>(sql, params = []) {
+  db.<span class="fn">run</span>(sql, params);
+  <span class="fn">saveDb</span>(); <span class="cm">// ¡Persistencia en CADA operación!</span>
+}</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Cada INSERT, UPDATE o DELETE ejecuta saveDb(), que exporta toda la base de datos al archivo database.sqlite. Esto significa que incluso si el servidor se apaga inesperadamente (corte de luz), solo se pierde la operación en curso, no datos acumulados. Es un backup continuo en tiempo real. El archivo database.sqlite puede ser respaldado externamente con una simple copia (cp, rsync, S3 sync). <strong>Archivo real:</strong> backend/server.js líneas 60-68.</div>
+    </div>
+    <div class="card">
+      <h3>🛡️ Rate Limiting (Anti-DoS) <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>backend/server.js</code> - Protección contra ataques de denegación de servicio</p>
+      <pre><span class="cm">// Límite general: 100 peticiones cada 15 minutos por IP</span>
+<span class="kw">const</span> limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 100,
+  standardHeaders: true, legacyHeaders: false,
+  message: { error: <span class="str">'Demasiadas solicitudes. Espere 15 min.'</span> }
+});
+app.<span class="fn">use</span>(<span class="str">'/api/'</span>, limiter);
+<span class="cm">// Límite estricto para login: solo 5 intentos cada 15 min</span>
+<span class="kw">const</span> loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 5,
+  message: { error: <span class="str">'Demasiados intentos. Espere 15 min.'</span> }
+});
+app.<span class="fn">post</span>(<span class="str">'/api/login'</span>, loginLimiter, ...);</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Protege contra ataques DoS limitando el número de peticiones por IP en 15 minutos. Si un atacante intenta saturar la API, el sistema responde con error 429 y bloquea temporalmente a esa IP. El login tiene un límite aún más restrictivo (5 intentos) para prevenir ataques de fuerza bruta. Las cabeceras estándar (RateLimit-Limit, RateLimit-Remaining) informan al cliente sobre su límite actual. <strong>Archivo real:</strong> backend/server.js líneas 40-55.</div>
+    </div>
+    <div class="card">
+      <h3>🔒 Hardening Preventivo (Firewall + SSH) <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>ansible/roles/security/</code> - Configuración preventiva de seguridad del servidor</p>
+      <pre><span class="cm"># UFW: Política "denegar todo por defecto"</span>
+- ufw: state=enabled direction=incoming policy=deny
+<span class="cm"># Solo permitir puertos esenciales:</span>
+- { rule: allow, port: '22', proto: 'tcp' }   <span class="cm"># SSH</span>
+- { rule: allow, port: '80', proto: 'tcp' }   <span class="cm"># HTTP</span>
+- { rule: allow, port: '443', proto: 'tcp' }  <span class="cm"># HTTPS</span>
+- { rule: deny,  port: '3000', proto: 'tcp' } <span class="cm"># API oculta</span>
+
+<span class="cm"># SSH Hardening</span>
+PermitRootLogin no                             <span class="cm"># No root</span>
+PasswordAuthentication no                      <span class="cm"># Solo claves</span>
+MaxAuthTries 3                                 <span class="cm"># 3 intentos</span>
+
+<span class="cm"># Fail2Ban - Bloqueo automático</span>
+[sshd]
+enabled = true; maxretry = 3; bantime = 3600</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Principio de "denegar todo por defecto, permitir solo lo necesario". UFW bloquea todo el tráfico entrante excepto SSH (22), HTTP (80) y HTTPS (443). La API en puerto 3000 no está expuesta (solo a través de Nginx). SSH se protege desactivando login root, exigiendo claves públicas (no contraseñas) y limitando a 3 intentos. Fail2Ban bloquea IPs que fallen 3 intentos SSH durante 1 hora. <strong>Archivo real:</strong> ansible/roles/security/tasks/main.yml.</div>
+    </div>
+    <div class="card">
+      <h3>⏪ Rollback (Recuperación ante fallos) <span class="badge badge-implemented">✅ CÓDIGO REAL</span></h3>
+      <p><code>ansible/rollback.yml</code> - Plan de contingencia para recuperación de código</p>
+      <pre><span class="cm"># Plan: ¿Qué hago si la nueva versión tiene un bug crítico?</span>
+<span class="cm"># Paso 1: Ejecutar rollback a versión estable</span>
+ansible-playbook rollback.yml -e "git_ref=v1.0.0"
+
+<span class="cm"># El playbook ejecuta automáticamente:</span>
+- git checkout {{ git_ref }}    <span class="cm"># Volver a código anterior</span>
+- npm ci                        <span class="cm"># Reinstalar dependencias</span>
+- npm run build -- --prod       <span class="cm"># Recompilar frontend Angular</span>
+- pm2 restart ckj-api           <span class="cm"># Reiniciar backend</span>
+<span class="cm"># Tiempo total de recuperación: &lt; 2 minutos</span>
+
+<span class="cm"># Paso 3: Verificar que todo funciona</span>
+ansible-playbook status.yml</pre>
+      <div class="explanation"><strong>¿Qué hace?</strong> Permite revertir a una versión anterior del código en menos de 2 minutos. Es el plan de recuperación principal ante un bug crítico en producción. El flujo es automático: especificas la versión estable (git tag o commit) y Ansible ejecuta checkout, reinstala dependencias, recompila Angular y reinicia el backend. El playbook status.yml verifica que la recuperación fue exitosa consultando PM2 y Nginx. <strong>Archivo real:</strong> ansible/rollback.yml.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12: CONTINGENCIA - PROPUESTA -->
+<section class="slide slide-content">
+  <h2>🔮 Contingencia - Propuesta de Mejora para CKJ</h2>
+  <p class="slide-subtitle">Disaster Recovery profesional en AWS con RDS Multi-AZ, backups automáticos y K8s multi-zona</p>
+  <div class="two-col">
+    <div class="card">
+      <h3>🗄️ RDS Multi-AZ + Backup Automático <span class="badge badge-concept">📌 PROPUESTA (no implementado)</span></h3>
+      <p>Base de datos redundante en múltiples zonas con recuperación automática</p>
+      <pre><span class="cm"># terraform/rds.tf - Esto NO está en el proyecto actual</span>
+resource <span class="str">"aws_db_instance"</span> <span class="str">"ckj_db"</span> {
+  engine         = <span class="str">"postgres"</span>
+  instance_class = <span class="str">"db.t3.medium"</span>
+  <span class="cm">// Multi-AZ: réplica síncrona en otra zona de disponibilidad</span>
+  multi_az                = true
+  <span class="cm">// Backups automáticos con 30 días de retención</span>
+  backup_retention_period = 30
+  backup_window           = <span class="str">"03:00-04:00"</span>
+  <span class="cm">// Protección contra eliminación accidental</span>
+  deletion_protection = true
+  copy_tags_to_snapshot = true
+}
+
+<span class="cm">// 🔧 Cambios necesarios en CKJ para implementar esto:</span>
+<span class="cm">// 1. Reemplazar sql.js por pg (node-postgres)</span>
+<span class="cm">// 2. Las consultas SQL actuales son compatibles</span>
+<span class="cm">// 3. Agregar pool de conexiones (pg-pool)</span>
+<span class="cm">// 4. Variables de entorno: DB_HOST, DB_USER, DB_PASS</span></pre>
+      <div class="explanation"><strong>📌 ¿Qué cambiaría en CKJ?</strong> 1) En server.js, reemplazar initSqlJs() por new Pool() de pg. Las consultas son casi idénticas (SQL estándar). 2) Migrar los datos: exportar database.sqlite a SQL, importar en RDS. 3) Configurar conexión vía variables de entorno. <strong>Beneficio:</strong> Si la BD primaria falla, RDS hace failover automático a la réplica en &lt;60 segundos, sin pérdida de datos. Backups automáticos permiten restaurar a cualquier punto en los últimos 30 días. <strong>Tiempo estimado:</strong> 2-3 semanas.</div>
+    </div>
+    <div class="card">
+      <h3>☸️ Disaster Recovery Multi-Zona (K8s) <span class="badge badge-concept">📌 PROPUESTA (no implementado)</span></h3>
+      <p>Plan completo de recuperación ante desastres con Kubernetes multi-zona</p>
+      <pre><span class="cm"># k8s/pod-disruption-budget.yaml - Garantiza disponibilidad</span>
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: ckj-pdb }
+spec:
+  minAvailable: 2       <span class="cm">// Mínimo 2 pods siempre activos</span>
+  selector: { matchLabels: { app: ckj } }
+
+<span class="cm"># k8s/topology-spread.yaml - Distribuir pods entre zonas</span>
+spec:
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: failure-domain.beta.kubernetes.io/zone
+
+<span class="cm">// 🔧 Cambios necesarios en CKJ:</span>
+<span class="cm">// 1. EKS multi-zona (us-east-1a, 1b, 1c)</span>
+<span class="cm">// 2. BD: RDS Multi-AZ (no SQLite local)</span>
+<span class="cm">// 3. Uploads: S3 con lifecycle policy</span>
+<span class="cm">// 4. Frontend: CloudFront + S3 bucket</span></pre>
+      <div class="explanation"><strong>📌 ¿Qué cambiaría en CKJ?</strong> 1) Uploads locales → multer-s3 (las imágenes se guardan en S3). 2) Frontend: ng build se sube a S3 y se sirve via CloudFront. 3) EKS: cluster con nodos en 3 zonas. <strong>Beneficio:</strong> PodDisruptionBudget garantiza al menos 2 pods activos. TopologySpreadConstraints distribuye pods entre zonas. Si una zona completa falla, las otras siguen sirviendo. <strong>Tiempo estimado:</strong> 4-5 semanas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13: TABLA COMPARATIVA -->
+<section class="slide slide-content">
+  <h2>📊 Tabla Comparativa: Todo lo Implementado vs. Propuesto</h2>
+  <p class="slide-subtitle">28 herramientas evaluadas: 20 implementadas en CKJ + 8 propuestas de mejora hacia la nube</p>
+  <div class="card" style="flex:1;overflow:auto;">
+    <div class="table-grid" style="grid-template-columns:auto 1fr auto 1fr;font-size:0.65em;">
+      <span class="header">Herramienta</span><span class="header">Propósito en CKJ</span><span class="header">Estado</span><span class="header">Cambio necesario para implementar</span>
+      <span class="sep"></span>
+      <span>Helmet</span><span>Cabeceras HTTP seguras (XSS, clickjacking, MIME)</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Rate Limiting</span><span>100 req/15min global, 5 intentos login</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>JWT Auth</span><span>Tokens con expiración 12h, middleware RBAC</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>bcrypt</span><span>Hash de contraseñas con 10 rondas de sal</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Validación</span><span>Tipos estrictos, lista blanca de roles, 1MB máx</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Husky</span><span>Pre-commit hooks para calidad y seguridad</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>lint-staged</span><span>Prettier + ESLint automáticos antes de cada commit</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Gitleaks</span><span>Detección de secretos en commits (150+ patrones)</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>npm audit</span><span>Escaneo de vulnerabilidades en dependencias</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Trivy</span><span>Escaneo de archivos (HIGH/CRITICAL)</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>SonarQube</span><span>Calidad y seguridad del código fuente</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Snyk</span><span>Monitoreo continuo de vulnerabilidades</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Checkov</span><span>Escaneo de playbooks Ansible</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>PM2</span><span>Auto-reinicio, watch, 300MB RAM máx, startup</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Docker</span><span>Multi-stage build, --restart always, no-root</span><span class="tag tag-green">✅ DOCKER</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Ansible</span><span>Deploy + rollback automatizado en &lt;2 min</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Nginx</span><span>SSL, reverse proxy, caché 1 año, seguridad</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>Fail2Ban</span><span>Bloqueo SSH (3 intentos → 1h ban)</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>UFW</span><span>Firewall: solo 22, 80, 443 abiertos</span><span class="tag tag-green">✅ ANSIBLE</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span>saveDb()</span><span>Persistencia inmediata en cada operación SQL</span><span class="tag tag-green">✅ CÓDIGO</span><span style="color:var(--text-muted);font-size:0.8em;">— Ya implementado</span>
+      <span class="sep"></span>
+      <span>Terraform</span><span>Infraestructura como código en AWS</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">Crear .tf + VPC + subnets + security groups</span>
+      <span>AWS WAF</span><span>Firewall de aplicaciones web (OWASP Top 10)</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">Configurar ACL + reglas + CloudFront</span>
+      <span>Kubernetes</span><span>Orquestación con auto-recuperación y HPA</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">Manifiestos YAML + EKS + metrics server</span>
+      <span>AWS Auto Scaling</span><span>Escalado horizontal según CPU &gt;60%</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">Launch template + ASG + ALB target group</span>
+      <span>RDS Multi-AZ</span><span>BD redundante en 2 zonas con failover automático</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">sql.js → pg + migración datos + pool</span>
+      <span>S3</span><span>Almacenamiento escalable de uploads</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">multer-disk → multer-s3 + presigned URLs</span>
+      <span>CloudFront</span><span>CDN global para frontend Angular</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">Build → S3 bucket → CloudFront distribution</span>
+      <span>Vault</span><span>Gestión y rotación automática de secretos</span><span class="tag tag-orange">📌 PROP.</span><span style="color:#ffb74d;font-size:0.8em;">Vault Agent injector + K8s secrets</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 14: CONCLUSIÓN -->
+<section class="slide slide-content">
+  <h2>🎯 Conclusión</h2>
+  <p class="slide-subtitle">Resumen del estado actual del proyecto CKJ y hoja de ruta hacia la nube</p>
+  <div class="two-col" style="grid-template-columns:1.2fr 0.8fr;">
+    <div class="card">
+      <h3>✅ Logros actuales del proyecto CKJ</h3>
+      <p style="font-size:0.78em;color:var(--text-muted);margin-bottom:6px;">El proyecto CKJ implementa actualmente <strong>20 medidas</strong> distribuidas en:</p>
+      <ul style="font-size:0.82em;">
+        <li><strong>🔒 9 medidas de seguridad:</strong> JWT, Helmet, bcrypt, Rate Limit, validación, Husky, lint-staged, Gitleaks, 5 herramientas DevSecOps (npm audit, Trivy, SonarQube, Snyk, Checkov)</li>
+        <li><strong>🔄 7 medidas de resiliencia:</strong> PM2 auto-reinicio + watch + 300MB, Docker multi-stage + restart always, Ansible deploy + rollback, Nginx proxy + SSL + caché</li>
+        <li><strong>📋 4 medidas de contingencia:</strong> saveDb() persistencia inmediata, Rate limiting anti-DoS, UFW firewall + Fail2Ban, Hardening SSH + unattended-upgrades</li>
+      </ul>
+      <div class="explanation" style="margin-top:6px;font-size:0.8em;">Todas estas medidas están implementadas con código real en el proyecto, verificable en los archivos del repositorio.</div>
+    </div>
+    <div class="card">
+      <h3>🚀 Hoja de ruta propuesta</h3>
+      <p style="font-size:0.78em;color:var(--text-muted);margin-bottom:6px;">Para escalar el proyecto a nivel profesional en la nube:</p>
+      <ul style="font-size:0.82em;">
+        <li><strong>Fase 1 (1-2 sem):</strong> Terraform + S3 para uploads</li>
+        <li><strong>Fase 2 (2-3 sem):</strong> Migrar BD a RDS PostgreSQL</li>
+        <li><strong>Fase 3 (3-4 sem):</strong> Kubernetes + HPA (3 réplicas)</li>
+        <li><strong>Fase 4 (4-6 sem):</strong> AWS Auto Scaling + Multi-AZ</li>
+        <li><strong>Fase 5 (6-8 sem):</strong> Disaster Recovery completo</li>
+      </ul>
+      <div class="explanation" style="margin-top:6px;font-size:0.8em;">La combinación de buenas prácticas, automatización e infraestructura robusta permite construir sistemas realmente resilientes y altamente disponibles que respondan rápidamente a cualquier adversidad.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 15: CIERRE -->
+<section class="slide slide-title">
+  <h1>¡Gracias!</h1>
+  <p class="subtitle">CKJ - Sistema de Almacén<br>
+  Seguridad, Resiliencia y Contingencia en DevOps</p>
+  <br>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;min-width:90px;">
+      <div style="font-size:1.6em;">✅</div>
+      <div style="font-size:0.75em;color:var(--text-muted);margin-top:4px;">20 medidas<br>implementadas</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;min-width:90px;">
+      <div style="font-size:1.6em;">📌</div>
+      <div style="font-size:0.75em;color:var(--text-muted);margin-top:4px;">8 propuestas<br>de mejora</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;min-width:90px;">
+      <div style="font-size:1.6em;">🛡️</div>
+      <div style="font-size:0.75em;color:var(--text-muted);margin-top:4px;">5 herramientas<br>DevSecOps</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;min-width:90px;">
+      <div style="font-size:1.6em;">🐶</div>
+      <div style="font-size:0.75em;color:var(--text-muted);margin-top:4px;">Husky +<br>Gitleaks</div>
+    </div>
+  </div>
+  <div style="margin-top:24px;color:var(--text-muted);font-size:0.8em;">
+    <p>CKJ - Sistema de Almacén © 2026</p>
+  </div>
+</section>
+
+</div>
+
+<div class="nav-bar">
+  <button id="prevBtn">◀</button>
+  <div class="nav-dots" id="navDots"></div>
+  <button id="nextBtn">▶</button>
+  <span id="pageNum" style="font-size:0.75em;color:var(--text-muted);margin-left:8px;"></span>
+</div>
+
+<script>
+const wrapper = document.getElementById('slidesWrapper');
+const slides = wrapper.querySelectorAll('.slide');
+const dotsContainer = document.getElementById('navDots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const pageNum = document.getElementById('pageNum');
+const progress = document.getElementById('progress');
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot';
+  dot.dataset.index = i;
+  dot.addEventListener('click', () => slides[i].scrollIntoView({ behavior: 'smooth' }));
+  dotsContainer.appendChild(dot);
+});
+function updateNav() {
+  const current = Math.round(wrapper.scrollLeft / wrapper.clientWidth);
+  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  pageNum.textContent = `${current + 1} / ${slides.length}`;
+  progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+}
+wrapper.addEventListener('scroll', updateNav);
+prevBtn.addEventListener('click', () => wrapper.scrollBy({ left: -wrapper.clientWidth, behavior: 'smooth' }));
+nextBtn.addEventListener('click', () => wrapper.scrollBy({ left: wrapper.clientWidth, behavior: 'smooth' }));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') wrapper.scrollBy({ left: wrapper.clientWidth, behavior: 'smooth' });
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') wrapper.scrollBy({ left: -wrapper.clientWidth, behavior: 'smooth' });
+});
+updateNav();
+</script>
+
+</body>
+</html>

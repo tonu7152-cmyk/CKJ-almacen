@@ -57,6 +57,15 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '1mb' })); // Límite de tamaño para evitar DoS
 app.use('/uploads', express.static(UPLOADS_DIR));
 
+// Servir frontend compilado (Angular dist)
+const DIST_DIR = path.join(__dirname, '..', 'dist', 'ckj', 'browser');
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(DIST_DIR, 'index.html'));
+  });
+}
+
 let db;
 
 function saveDb() {

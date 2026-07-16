@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Almacén - CKJ Sistema de Almacén</title>
+<style>
+:root{--primary:#e65100;--primary-dark:#bf360c;--accent:#ff6f00;--bg:#f5f5f5;--card:#fff;--text:#333;--border:#ddd}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:14px}
+.print-btn{position:fixed;bottom:30px;right:30px;z-index:1000;background:var(--primary);color:#fff;border:none;border-radius:50px;padding:14px 28px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(230,81,0,0.4);transition:.3s;display:flex;align-items:center;gap:8px}
+.print-btn:hover{background:var(--primary-dark);transform:translateY(-2px);box-shadow:0 6px 20px rgba(230,81,0,0.5)}
+header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:30px 20px;text-align:center}
+header h1{font-size:2.2em;margin-bottom:8px}
+header p{font-size:1.1em;opacity:.9}
+header .version{opacity:.6;font-size:.85em}
+header .rol-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:4px 16px;border-radius:20px;font-size:.9em;margin-top:8px}
+.container{display:flex;max-width:1400px;margin:0 auto}
+nav.toc{width:270px;min-width:270px;background:var(--card);padding:16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--border)}
+nav.toc h2{font-size:1em;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary)}
+nav.toc a{display:block;padding:5px 10px;color:var(--text);text-decoration:none;border-radius:4px;margin-bottom:1px;font-size:.82em;transition:.2s}
+nav.toc a:hover{background:#fff3e0;color:var(--primary)}
+nav.toc a.sub{padding-left:20px;font-size:.78em}
+main{flex:1;padding:25px 35px;max-width:920px}
+section{margin-bottom:40px;scroll-margin-top:15px}
+section h2{font-size:1.5em;color:var(--primary-dark);padding-bottom:8px;border-bottom:3px solid var(--primary);margin-bottom:20px}
+section h3{font-size:1.15em;color:#444;margin:18px 0 8px}
+table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--card);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+th,td{padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:.9em}
+th{background:var(--primary);color:#fff;font-weight:600}
+tr:hover{background:#fff3e0}
+code{background:#fff3e0;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:.9em}
+ul,ol{margin:8px 0 8px 22px}li{margin-bottom:4px;font-size:.95em}
+.card{background:var(--card);border-radius:8px;padding:16px;margin:12px 0;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.info{background:#e3f2fd;border-left:4px solid #1976d2;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.tip{background:#e8f5e9;border-left:4px solid #2e7d32;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.no-access{background:#f5f5f5;border-left:4px solid #9e9e9e;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0;font-size:.92em;color:#666}
+.step{margin:6px 0;padding-left:10px;font-size:.95em}
+.step-num{display:inline-block;background:var(--primary);color:#fff;width:22px;height:22px;text-align:center;border-radius:50%;font-size:12px;font-weight:700;margin-right:6px}
+.badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:.8em;font-weight:600}
+.badge-admin{background:#ffebee;color:#c62828}
+.badge-almacen{background:#fff3e0;color:#e65100}
+.badge-ventas{background:#e8f5e9;color:#2e7d32}
+.permiso-si{color:#2e7d32;font-weight:600}
+.permiso-no{color:#c62828}
+.permiso-ro{color:#e65100;font-style:italic}
+.screenshot{width:100%;max-width:700px;border:1px solid var(--border);border-radius:8px;margin:12px auto;display:block;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.screenshot-caption{text-align:center;font-size:.85em;color:#666;margin-top:-8px;margin-bottom:16px;font-style:italic}
+@media print{.print-btn,nav.toc{display:none!important}body{background:#fff;font-size:12px}nav.toc{display:none!important}.container{display:block!important;max-width:100%!important}main{max-width:100%!important;padding:0!important}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}pre{-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-inside:avoid}table{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{page-break-inside:auto}}
+@media(max-width:768px){.container{flex-direction:column}nav.toc{width:100%;min-width:auto;height:auto;position:relative}main{padding:15px}}
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨️ Imprimir / PDF</button>
+
+<header>
+<h1>📦 CKJ - Sistema de Almacén</h1>
+<p>Manual del Encargado de Almacén</p>
+<div class="rol-badge">📋 Gestión de inventario y movimientos</div>
+<div class="version">v1.0.0 - Julio 2026</div>
+</header>
+
+<div class="container">
+<nav class="toc">
+<h2>📑 Índice</h2>
+<a href="#intro">1. Introducción</a>
+<a href="#acceso" class="sub">1.1 Credenciales</a>
+<a href="#acceso" class="sub">1.2 Lo que SÍ puedes hacer</a>
+<a href="#acceso" class="sub">1.3 Lo que NO puedes hacer</a>
+<a href="#login">2. Acceso al Sistema</a>
+<a href="#dashboard">3. Dashboard</a>
+<a href="#menu">4. Menú de Navegación</a>
+<a href="#inventario">5. Gestión de Inventario</a>
+<a href="#inventario" class="sub">5.1 Agregar material</a>
+<a href="#inventario" class="sub">5.2 Editar material</a>
+<a href="#ingreso">6. Registrar Ingreso</a>
+<a href="#salida">7. Registrar Salida</a>
+<a href="#reportes">8. Historial y Reportes</a>
+<a href="#permisos">9. Resumen de Permisos</a>
+<a href="#problemas">10. Solución de Problemas</a>
+</nav>
+
+<main>
+<section id="intro">
+<h2>1. Introducción</h2>
+<p>Bienvenido al manual del <strong>Encargado de Almacén</strong>. Como usuario de <span class="badge badge-almacen">ALMACÉN</span> puedes gestionar el inventario, registrar entradas y salidas de materiales, y consultar reportes.</p>
+
+<h3>1.1 Credenciales de acceso</h3>
+<table>
+<tr><th>Usuario</th><th>Contraseña</th><th>Rol</th></tr>
+<tr><td><code>almacen</code></td><td><code>almacen123</code></td><td><span class="badge badge-almacen">Encargado Almacén</span></td></tr>
+</table>
+<img src="imagenes/01-login.png" alt="Pantalla de inicio de sesión" class="screenshot">
+<p class="screenshot-caption">Pantalla de inicio de sesión del sistema</p>
+
+<h3>1.2 Funciones que SÍ puedes realizar</h3>
+<ul>
+<li>✅ Agregar y editar materiales en el inventario</li>
+<li>✅ Registrar ingresos de materiales</li>
+<li>✅ Registrar salidas de materiales</li>
+<li>✅ Consultar el Dashboard y Reportes</li>
+<li>✅ Exportar reportes a PDF</li>
+</ul>
+
+<h3>1.3 Funciones NO disponibles para ti</h3>
+<ul>
+<li>❌ Eliminar materiales del inventario</li>
+<li>❌ Gestionar usuarios del sistema</li>
+<li>❌ Ajustar stock directamente</li>
+<li>❌ Realizar ventas</li>
+</ul>
+</section>
+
+<section id="login">
+<h2>2. Acceso al Sistema</h2>
+<div class="card">
+<p>Para ingresar al sistema, abre tu navegador y ve a la dirección del servidor. Verás la pantalla de inicio de sesión.</p>
+</div>
+<h3>Pasos para iniciar sesión</h3>
+<div class="step"><span class="step-num">1</span> Escribe tu nombre de usuario: <strong>almacen</strong></div>
+<div class="step"><span class="step-num">2</span> Escribe tu contraseña: <strong>almacen123</strong></div>
+<div class="step"><span class="step-num">3</span> Haz clic en el botón <strong>"Ingresar"</strong></div>
+<div class="warning">⚠️ Si olvidas tu contraseña, contacta al Administrador del sistema.</div>
+</section>
+
+<section id="dashboard">
+<h2>3. Dashboard (Panel Principal)</h2>
+<p>El Dashboard es la pantalla que ves al iniciar sesión. Muestra un resumen del estado del almacén.</p>
+<table>
+<tr><th>Indicador</th><th>Descripción</th></tr>
+<tr><td>📦 Materiales</td><td>Total de materiales registrados</td></tr>
+<tr><td>📊 Total en Stock</td><td>Suma de todas las cantidades en inventario</td></tr>
+<tr><td>💰 Valor Total</td><td>Valor monetario del inventario</td></tr>
+<tr><td>⚠️ Stock Bajo</td><td>Materiales por debajo del stock mínimo</td></tr>
+<tr><td>📥 Ingresos / 📤 Salidas Hoy</td><td>Movimientos registrados el día de hoy</td></tr>
+</table>
+<div class="tip">💡 Los valores se actualizan automáticamente al registrar movimientos.</div>
+<img src="imagenes/02-dashboard.png" alt="Dashboard del sistema" class="screenshot">
+<p class="screenshot-caption">Dashboard principal con 51 materiales registrados</p>
+</section>
+
+<section id="menu">
+<h2>4. Menú de Navegación</h2>
+<p>El menú lateral izquierdo te permite acceder a las secciones del sistema:</p>
+<table>
+<tr><th>Opción</th><th>Descripción</th><th>Disponible</th></tr>
+<tr><td>📊 Dashboard</td><td>Resumen general del almacén</td><td class="permiso-si">✅</td></tr>
+<tr><td>📋 Inventario</td><td>Lista de todos los materiales</td><td class="permiso-si">✅</td></tr>
+<tr><td>📥 Ingreso</td><td>Registrar entrada de materiales</td><td class="permiso-si">✅</td></tr>
+<tr><td>📤 Salida</td><td>Registrar salida de materiales</td><td class="permiso-si">✅</td></tr>
+<tr><td>💰 Venta</td><td>Punto de venta</td><td class="permiso-no">❌</td></tr>
+<tr><td>📈 Historial</td><td>Reportes y movimientos</td><td class="permiso-si">✅</td></tr>
+<tr><td>👤 Usuarios</td><td>Gestión de usuarios</td><td class="permiso-no">❌</td></tr>
+</table>
+</section>
+
+<section id="inventario">
+<h2>5. Gestión de Inventario</h2>
+<p>Como ALMACÉN puedes:</p>
+<ul>
+<li>✅ Ver la lista completa de materiales</li>
+<li>✅ Buscar materiales por nombre o categoría</li>
+<li>✅ Agregar NUEVOS materiales al inventario</li>
+<li>✅ Editar materiales existentes</li>
+</ul>
+<div class="no-access">🚫 No puedes eliminar materiales del inventario. Solo el Administrador puede hacerlo.</div>
+
+<h3>5.1 Agregar nuevo material</h3>
+<div class="step"><span class="step-num">1</span> Haz clic en <strong>"Nuevo Material"</strong></div>
+<div class="step"><span class="step-num">2</span> Completa todos los campos del formulario</div>
+<div class="step"><span class="step-num">3</span> Haz clic en <strong>"Guardar"</strong></div>
+
+<h3>5.2 Editar material</h3>
+<div class="step"><span class="step-num">1</span> Haz clic en el icono ✏️ <strong>(lápiz)</strong> en la fila del material</div>
+<div class="step"><span class="step-num">2</span> Modifica los campos necesarios</div>
+<div class="step"><span class="step-num">3</span> Haz clic en <strong>"Guardar"</strong></div>
+
+<div class="warning">⚠️ NO puedes eliminar materiales del inventario. Solo el Administrador puede hacerlo.</div>
+<img src="imagenes/03-materiales.png" alt="Inventario de materiales" class="screenshot">
+<p class="screenshot-caption">Gestión de inventario con 51 productos</p>
+</section>
+
+<section id="ingreso">
+<h2>6. Registrar Ingreso</h2>
+<p>Registra la entrada de materiales al almacén. El stock aumenta automáticamente.</p>
+<div class="step"><span class="step-num">1</span> Ve a <strong>"Ingreso"</strong> en el menú</div>
+<div class="step"><span class="step-num">2</span> Selecciona el <strong>Material</strong> del menú desplegable</div>
+<div class="step"><span class="step-num">3</span> Ingresa la <strong>Cantidad</strong></div>
+<div class="step"><span class="step-num">4</span> Opcional: <strong>Proveedor</strong> y <strong>comprobante</strong> (PDF o imagen)</div>
+<div class="step"><span class="step-num">5</span> Haz clic en <strong>"Registrar Ingreso"</strong></div>
+<div class="tip">💡 Usa el botón <strong>"Ver Inventario"</strong> para consultar stocks sin salir de la página.</div>
+<img src="imagenes/04-ingreso.png" alt="Registrar ingreso" class="screenshot">
+<p class="screenshot-caption">Formulario para registrar ingreso de materiales</p>
+</section>
+
+<section id="salida">
+<h2>7. Registrar Salida</h2>
+<p>Registra la salida de materiales del almacén. El stock disminuye automáticamente.</p>
+<div class="step"><span class="step-num">1</span> Ve a <strong>"Salida"</strong> en el menú</div>
+<div class="step"><span class="step-num">2</span> Selecciona el <strong>Material</strong></div>
+<div class="step"><span class="step-num">3</span> Ingresa la <strong>Cantidad</strong></div>
+<div class="step"><span class="step-num">4</span> Opcional: <strong>Destino</strong> del material</div>
+<div class="step"><span class="step-num">5</span> Haz clic en <strong>"Registrar Salida"</strong></div>
+<div class="warning">⚠️ NO puedes registrar una salida si el stock es <strong>insuficiente</strong>.</div>
+<img src="imagenes/05-salida.png" alt="Registrar salida" class="screenshot">
+<p class="screenshot-caption">Formulario para registrar salida de materiales</p>
+</section>
+
+<section id="reportes">
+<h2>8. Historial y Reportes</h2>
+<p>Puedes consultar todos los movimientos y exportar reportes a PDF.</p>
+<h3>Filtros disponibles</h3>
+<ul>
+<li><strong>Período:</strong> Esta semana, Este mes, Todo</li>
+<li><strong>Tipo:</strong> Ingreso, Salida, Todos</li>
+<li><strong>Material:</strong> Filtrar por uno específico</li>
+</ul>
+<h3>Exportar a PDF</h3>
+<div class="step"><span class="step-num">1</span> Aplica los filtros deseados</div>
+<div class="step"><span class="step-num">2</span> Haz clic en <strong>"Exportar PDF"</strong></div>
+<img src="imagenes/07-reportes.png" alt="Historial y reportes" class="screenshot">
+<p class="screenshot-caption">Historial de movimientos con filtros y exportación PDF</p>
+</section>
+
+<section id="permisos">
+<h2>9. Resumen de Permisos - ALMACÉN</h2>
+<table>
+<tr><th>Función</th><th>Acceso</th></tr>
+<tr><td>Ver Dashboard</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Ver Inventario</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Buscar materiales</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Agregar materiales</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Editar materiales</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Eliminar materiales</td><td class="permiso-no">❌ NO</td></tr>
+<tr><td>Registrar Ingreso</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Registrar Salida</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Realizar Ventas</td><td class="permiso-no">❌ NO</td></tr>
+<tr><td>Ver Reportes</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Exportar PDF</td><td class="permiso-si">✅ SI</td></tr>
+<tr><td>Gestionar Usuarios</td><td class="permiso-no">❌ NO</td></tr>
+<tr><td>Ajustar Stock</td><td class="permiso-no">❌ NO</td></tr>
+</table>
+<h3>Lo que NO puedes hacer como ALMACÉN</h3>
+<ul>
+<li>❌ Eliminar materiales del inventario</li>
+<li>❌ Gestionar usuarios del sistema</li>
+<li>❌ Ajustar stock directamente</li>
+<li>❌ Realizar ventas</li>
+</ul>
+</section>
+
+<section id="problemas">
+<h2>10. Solución de Problemas</h2>
+<div class="card">
+<p><strong>❌ No puedo iniciar sesión</strong></p>
+<ul>
+<li>Verifica tu usuario <strong>almacen</strong> y contraseña <strong>almacen123</strong></li>
+<li>Si tu cuenta fue desactivada, contacta al Administrador</li>
+<li>Máximo 5 intentos cada 15 minutos</li>
+</ul>
+</div>
+<div class="card">
+<p><strong>❌ Error "Stock insuficiente"</strong></p>
+<ul>
+<li>Revisa el stock actual en la sección Inventario</li>
+<li>Registra un ingreso antes de la salida si no hay stock</li>
+</ul>
+</div>
+<div class="card">
+<p><strong>❌ No encuentro la opción Usuarios</strong></p>
+<ul>
+<li>Es normal, esa sección es solo para Administradores</li>
+</ul>
+</div>
+</section>
+</main>
+</div>
+
+</body>
+</html>
